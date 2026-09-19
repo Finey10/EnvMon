@@ -57,14 +57,19 @@ AQI_LABELS = {1: "Good", 2: "Fair", 3: "Moderate", 4: "Poor", 5: "Very Poor"}
 def _zone_to_coords(zone: str) -> tuple[float, float]:
     """
     Map a zone name to Bengaluru lat/lon.
-    Matches on the zone number prefix (e.g. 'zone 1', 'zone 2').
-    Falls back to city centre if no match.
+    Falls back to dynamic OWM geocoding for any other city.
     """
     zone_lower = zone.strip().lower()
     for key, coords in ZONE_COORDS.items():
         if key in zone_lower:
             return coords
-    return DEFAULT_COORDS
+            
+    # Dynamic fallback: try to geocode the city name globally
+    try:
+        return _geocode_city(zone)
+    except Exception as e:
+        print(f"Geocoding failed for {zone!r}, falling back to Bengaluru city centre: {e}")
+        return DEFAULT_COORDS
 
 
 def _geocode_city(city: str) -> tuple[float, float]:

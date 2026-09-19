@@ -8,6 +8,7 @@ Shared JSON contract:
 """
 
 import pandas as pd
+import hashlib
 from pathlib import Path
 
 DATA_PATH = Path(__file__).parent.parent / "data" / "mock_zones.csv"
@@ -30,14 +31,38 @@ def _load_data() -> pd.DataFrame:
     return df
 
 
+def _generate_synthetic_water_data(city: str) -> pd.Series:
+    """Deterministically generate realistic water data for an unknown city."""
+    # Seed a hash with the city name so the same city always gets the same data
+    city_hash = int(hashlib.md5(city.strip().lower().encode()).hexdigest(), 16)
+    
+    # pH between 5.5 and 8.5
+    ph = 5.5 + (city_hash % 30) / 10.0
+    
+    # Turbidity between 0.5 and 10.5
+    turbidity = 0.5 + ((city_hash // 10) % 100) / 10.0
+    
+    # Coliform 20% chance
+    coliform = (city_hash % 5) == 0
+    
+    return pd.Series({
+        "zone": city,
+        "city": city,
+        "water_ph": round(ph, 1),
+        "water_turbidity": round(turbidity, 1),
+        "water_coliform": coliform
+    })
+
+
 def _match_zone(df: pd.DataFrame, zone: str) -> pd.Series:
-    """Case-insensitive substring match; falls back to first row if no match."""
+    """Case-insensitive substring match; falls back to dynamic generation."""
     zone_lower = zone.strip().lower()
     mask = df["zone"].str.lower().str.contains(zone_lower, na=False)
     matches = df[mask]
     if not matches.empty:
         return matches.iloc[0]
-    return df.iloc[0]  # fallback
+        
+    return _generate_synthetic_water_data(zone)
 
 
 def _determine_severity(row: pd.Series) -> tuple[str, str]:
