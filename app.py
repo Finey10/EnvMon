@@ -711,6 +711,7 @@ with col_map:
     deck = pdk.Deck(
         layers=[scatter_layer],
         initial_view_state=view_state,
+        map_provider=None,
         map_style="https://basemaps.cartocdn.com/gl/dark-matter-gl-style/style.json",
         tooltip={"text": "{name}"}
     )
