@@ -15,7 +15,8 @@ from pathlib import Path
 from ultralytics import YOLO
 
 # Use YOLOv8 nano — downloaded automatically on first run (~6 MB)
-_MODEL_NAME = "yolov8n.pt"
+# Use YOLOv8 medium — downloaded automatically on first run (~52 MB)
+_MODEL_NAME = "yolov8m.pt"
 _model = None  # lazy-loaded singleton
 
 
