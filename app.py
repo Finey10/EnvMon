@@ -19,6 +19,7 @@ from orchestrator import ZONES
 # ---------------------------------------------------------------------------
 # Page config
 # ---------------------------------------------------------------------------
+
 st.set_page_config(
     page_title="EcoWatch | Environmental Monitor",
     page_icon="🌍",

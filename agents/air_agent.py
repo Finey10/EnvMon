@@ -120,6 +120,23 @@ def run(zone: str) -> dict:
     item       = data["list"][0]
     owm_aqi    = item["main"]["aqi"]        # 1 (Good) → 5 (Very Poor)
     components = item["components"]
+    
+    # Fetch live weather data (wind, temp) for deeper context
+    weather_url = "http://api.openweathermap.org/data/2.5/weather"
+    w_params = {"lat": lat, "lon": lon, "appid": OWM_API_KEY, "units": "metric"}
+    w_resp = requests.get(weather_url, params=w_params, timeout=10)
+    w_resp.raise_for_status()
+    w_data = w_resp.json()
+    
+    temp = w_data["main"]["temp"]
+    wind_speed = w_data["wind"]["speed"]
+    wind_deg = w_data["wind"].get("deg", 0)
+    
+    def _wind_dir(deg):
+        dirs = ["N", "NE", "E", "SE", "S", "SW", "W", "NW"]
+        return dirs[int((deg / 45) + 0.5) % 8]
+        
+    wind_direction = _wind_dir(wind_deg)
 
     us_aqi    = OWM_TO_US_AQI[owm_aqi]
     severity  = _severity_from_us_aqi(us_aqi)
@@ -131,7 +148,8 @@ def run(zone: str) -> dict:
 
     note = (
         f"Air quality at {location_label} is {label} (AQI ≈ {us_aqi}). "
-        f"Dominant pollutant: {dominant}."
+        f"Dominant pollutant: {dominant}. "
+        f"Weather context: {temp}°C, Wind {wind_speed} m/s blowing {wind_direction}."
     )
 
     return {
@@ -146,6 +164,9 @@ def run(zone: str) -> dict:
         "owm_aqi":            owm_aqi,
         "dominant_pollutant": dominant,
         "components":         components,
+        "temperature_c":      temp,
+        "wind_speed_ms":      wind_speed,
+        "wind_direction":     wind_direction,
     }
 
 

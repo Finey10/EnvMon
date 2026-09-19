@@ -64,6 +64,19 @@ def _determine_severity(row: pd.Series) -> tuple[str, str]:
         return "low", f"turbidity {turbidity:.1f} NTU, no coliform"
 
 
+def _calculate_wqi(ph: float, turbidity: float, coliform: bool) -> int:
+    """Calculate a synthetic Water Quality Index (0-100)."""
+    score = 100
+    # Penalty for pH deviating from 7.0
+    score -= abs(7.0 - ph) * 10
+    # Penalty for turbidity
+    score -= turbidity * 5
+    # Heavy penalty for coliform
+    if coliform:
+        score -= 40
+    return int(max(0, min(100, score)))
+
+
 def run(zone: str) -> dict:
     """
     Main entry point for the Water Quality Agent.
@@ -88,9 +101,10 @@ def run(zone: str) -> dict:
     coliform     = bool(row["water_coliform"])
 
     severity, reason = _determine_severity(row)
+    wqi = _calculate_wqi(ph, turbidity, coliform)
 
     note = (
-        f"Water in {matched_zone} ({city}): pH {ph:.1f}, {reason}. "
+        f"Water in {matched_zone} ({city}): pH {ph:.1f}, WQI Score: {wqi}/100, {reason}. "
         f"Severity assessed as {severity}."
     )
 
@@ -105,6 +119,7 @@ def run(zone: str) -> dict:
         "ph":              ph,
         "turbidity_ntu":   turbidity,
         "coliform_detected": coliform,
+        "wqi_score":       wqi,
     }
 
 
