@@ -117,7 +117,7 @@ def run(air_result: dict, water_result: dict, litter_result: dict) -> dict:
             {"role": "user", "content": user_prompt},
         ],
         temperature=0.3,       # Low temperature for consistent, factual reasoning
-        max_tokens=512,
+        max_tokens=1024,
     )
 
     raw_text = response.choices[0].message.content
