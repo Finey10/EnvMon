@@ -1,0 +1,19 @@
+zone,ph,turbidity_ntu,coliform_detected,dissolved_oxygen,nitrates_ppm
+Zone A,7.2,1.2,0,8.5,2.1
+Zone B,6.8,3.8,0,7.9,4.5
+Zone C,5.9,6.5,1,5.2,12.3
+Zone D,7.5,0.8,0,9.1,1.8
+Zone E,7.1,2.1,0,8.2,3.2
+Zone F,6.2,7.8,1,4.8,15.6
+Zone G,8.1,4.5,0,7.5,5.1
+Zone H,5.5,11.2,1,3.9,22.4
+Zone I,7.4,1.5,0,8.8,2.7
+Zone J,6.6,3.2,0,7.3,4.9
+Zone K,8.4,0.5,0,9.4,1.2
+Zone L,5.7,9.1,1,4.1,18.7
+Industrial Area,5.1,13.5,1,2.8,28.9
+Riverside North,7.0,2.8,0,8.0,3.8
+Riverside South,6.4,5.2,1,6.1,9.3
+Downtown,7.3,1.9,0,8.6,2.5
+Suburbs East,7.6,1.1,0,9.0,1.9
+Wetlands,6.9,4.1,0,7.7,5.8

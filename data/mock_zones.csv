@@ -1,0 +1,5 @@
+zone,city,water_ph,water_turbidity,water_coliform
+Zone 1 - Riverside Industrial,Bengaluru,6.1,8.4,true
+Zone 2 - Central Market,Bengaluru,7.0,2.1,false
+Zone 3 - Lakeside Residential,Bengaluru,6.8,3.5,false
+Zone 4 - Outer Ring Road,Bengaluru,7.2,1.8,false
