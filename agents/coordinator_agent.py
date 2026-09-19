@@ -87,6 +87,36 @@ def _extract_json(text: str) -> dict:
     raise ValueError(f"Could not extract JSON from LLM response:\n{text}")
 
 
+def _fallback_synthesis(air: dict, water: dict, litter: dict) -> dict:
+    severities = [air.get("severity", "low"), water.get("severity", "low"), litter.get("severity", "low")]
+    high_count = severities.count("high")
+    med_count = severities.count("medium")
+    
+    if high_count >= 2:
+        risk = "high"
+        reasoning = f"Critical multi-signal alert: Multiple monitoring agents report HIGH severity contamination (Air AQI: {air.get('value')}, Water Turbidity: {water.get('value')} NTU, Litter: {litter.get('value')} objects). Combined environmental pressure poses severe local hazards."
+        action = "Dispatch emergency environmental response team immediately to inspect industrial runoff, test water quality, and deploy cleanup crews."
+    elif high_count == 1:
+        risk = "high" if med_count >= 1 else "medium"
+        high_agent = "Air" if air.get("severity") == "high" else ("Water" if water.get("severity") == "high" else "Litter")
+        reasoning = f"Elevated environmental risk: High severity signal detected by {high_agent} agent ({litter.get('note') if high_agent == 'Litter' else (air.get('note') if high_agent == 'Air' else water.get('note'))})."
+        action = "Issue targeted remediation advisory and schedule priority field inspection within 24 hours."
+    elif med_count >= 2:
+        risk = "medium"
+        reasoning = f"Moderate cumulative risk: Air AQI is {air.get('value')}, Water turbidity is {water.get('value')} NTU, and {litter.get('value')} litter objects detected."
+        action = "Schedule routine maintenance and step up monitoring frequency."
+    else:
+        risk = "low"
+        reasoning = "All environmental indicators (Air, Water, Litter) are within safe baseline parameters. No critical contamination detected."
+        action = "Maintain automated continuous monitoring schedule."
+
+    return {
+        "overall_risk": risk,
+        "reasoning": reasoning + " (Rule-based fallback — add GROQ_API_KEY to .env for LLM synthesis)",
+        "recommended_action": action
+    }
+
+
 def run(air_result: dict, water_result: dict, litter_result: dict) -> dict:
     """
     Main entry point for the Coordinator Agent.
@@ -99,32 +129,39 @@ def run(air_result: dict, water_result: dict, litter_result: dict) -> dict:
     Returns:
         {"overall_risk": str, "reasoning": str, "recommended_action": str}
     """
-    if not GROQ_API_KEY:
-        raise EnvironmentError("GROQ_API_KEY not set in environment / .env file")
+    load_dotenv(override=True)
+    api_key = os.getenv("GROQ_API_KEY")
 
-    client = Groq(api_key=GROQ_API_KEY)
+    if not api_key or api_key.strip() == "" or api_key.startswith("your_"):
+        return _fallback_synthesis(air_result, water_result, litter_result)
 
-    user_prompt = _build_user_prompt(air_result, water_result, litter_result)
+    try:
+        client = Groq(api_key=api_key)
+        user_prompt = _build_user_prompt(air_result, water_result, litter_result)
 
-    response = client.chat.completions.create(
-        model=MODEL,
-        messages=[
-            {"role": "system", "content": SYSTEM_PROMPT},
-            {"role": "user", "content": user_prompt},
-        ],
-        temperature=0.3,       # Low temperature for consistent, factual reasoning
-        max_tokens=512,
-    )
+        response = client.chat.completions.create(
+            model=MODEL,
+            messages=[
+                {"role": "system", "content": SYSTEM_PROMPT},
+                {"role": "user", "content": user_prompt},
+            ],
+            temperature=0.3,
+            max_tokens=512,
+        )
 
-    raw_text = response.choices[0].message.content
-    result = _extract_json(raw_text)
+        raw_text = response.choices[0].message.content
+        result = _extract_json(raw_text)
 
-    # Validate expected keys
-    for key in ("overall_risk", "reasoning", "recommended_action"):
-        if key not in result:
-            raise ValueError(f"LLM response missing required key: {key!r}")
+        for key in ("overall_risk", "reasoning", "recommended_action"):
+            if key not in result:
+                raise ValueError(f"LLM response missing required key: {key!r}")
 
-    return result
+        return result
+    except Exception as exc:
+        print(f"[coordinator_agent] Groq API call failed: {exc}. Using fallback synthesis.")
+        fallback = _fallback_synthesis(air_result, water_result, litter_result)
+        fallback["reasoning"] = fallback["reasoning"].replace("(Rule-based fallback — add GROQ_API_KEY to .env for LLM synthesis)", f"(Groq API fallback: {exc})")
+        return fallback
 
 
 if __name__ == "__main__":

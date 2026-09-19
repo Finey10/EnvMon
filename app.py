@@ -1,177 +1,409 @@
 """
-EcoWatch — Multi-Agent Environmental Monitoring Dashboard
-Run with: streamlit run app.py
+EcoTriBlend — Multi-Agent Environmental Monitoring Dashboard
+Bengaluru Smart City Initiative
 """
 
 import os
 import tempfile
+import numpy as np
+import pandas as pd
 from pathlib import Path
 
 import streamlit as st
 from PIL import Image, ImageDraw
 from dotenv import load_dotenv
+import pydeck as pdk
 
 load_dotenv()
 
 import orchestrator
 from orchestrator import ZONES
 
+import base64
+
+def get_base64_logo() -> str:
+    icon_path = PROJECT_ROOT / "ecotriblend_icon.png"
+    if icon_path.exists():
+        with open(icon_path, "rb") as f:
+            encoded = base64.b64encode(f.read()).decode("utf-8")
+        return f"data:image/png;base64,{encoded}"
+    logo_path = PROJECT_ROOT / "ecotriblend_logo.jpg"
+    if logo_path.exists():
+        with open(logo_path, "rb") as f:
+            encoded = base64.b64encode(f.read()).decode("utf-8")
+        return f"data:image/jpeg;base64,{encoded}"
+    return ""
+
 # ---------------------------------------------------------------------------
 # Page config
 # ---------------------------------------------------------------------------
 st.set_page_config(
-    page_title="EcoWatch | Environmental Monitor",
-    page_icon="🌍",
+    page_title="EcoTriBlend | Three Signals. One Combined View.",
+    page_icon="🍃",
     layout="wide",
     initial_sidebar_state="collapsed",
 )
 
 # ---------------------------------------------------------------------------
-# Custom CSS
+# Custom CSS — Futuristic Dark Glassmorphism UI
 # ---------------------------------------------------------------------------
 st.markdown("""
 <style>
-@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap');
+@import url('https://fonts.cdnfonts.com/css/cooper-black');
 
-html, body, [class*="css"] { font-family: 'Inter', sans-serif; }
+*, html, body, div, span, h1, h2, h3, h4, h5, h6, p, a, label, button, input, select, textarea, [class*="css"], [class*="st-"], [data-testid] {
+    font-family: 'Cooper Black', 'Cooper Hewitt', 'Bookman Old Style', serif, sans-serif !important;
+}
 
 .stApp {
-    background: linear-gradient(135deg, #0a0f1e 0%, #0d1b2e 50%, #091529 100%);
-    color: #e2e8f0;
+    background: #000000;
+    color: #f1f5f9;
 }
 
-/* ── Header ── */
-.eco-header {
+/* ── Header Wrapper ── */
+.header-wrapper {
     text-align: center;
-    padding: 2.5rem 1rem 1.5rem;
-    background: linear-gradient(135deg, rgba(16,185,129,0.08) 0%, rgba(59,130,246,0.08) 100%);
+    padding: 1.2rem 1rem 0.8rem;
+    margin-bottom: 1.2rem;
+}
+.header-title {
+    font-size: 2.5rem;
+    font-weight: 800;
+    color: #ffffff;
+    letter-spacing: -0.5px;
+    margin: 0;
+}
+.header-subtitle {
+    font-size: 0.9rem;
+    color: #94a3b8;
+    margin-top: 0.3rem;
+    font-weight: 500;
+}
+
+/* ── Metallic Dark Cards ── */
+.glass-card {
+    background: linear-gradient(180deg, #2a2a32 0%, #16161c 50px, #0e0e12 100%);
+    border: 1px solid rgba(255, 255, 255, 0.12);
     border-radius: 20px;
-    border: 1px solid rgba(16,185,129,0.15);
-    margin-bottom: 2rem;
+    padding: 1.25rem;
+    height: 100%;
+    box-shadow: 0 15px 40px rgba(0, 0, 0, 0.8);
 }
-.eco-title {
-    font-size: 3rem; font-weight: 800;
-    background: linear-gradient(135deg, #10b981, #3b82f6, #8b5cf6);
-    -webkit-background-clip: text; -webkit-text-fill-color: transparent;
-    background-clip: text; margin: 0; letter-spacing: -1px;
-}
-.eco-subtitle { font-size: 1.05rem; color: #94a3b8; margin-top: 0.5rem; }
-
-/* ── Zone meta strip ── */
-.zone-meta {
-    display: flex; gap: 1.5rem; flex-wrap: wrap;
-    background: rgba(255,255,255,0.03);
-    border: 1px solid rgba(255,255,255,0.07);
-    border-radius: 12px; padding: 0.9rem 1.2rem;
-    margin-bottom: 1.2rem; font-size: 0.82rem; color: #94a3b8;
-}
-.zone-meta span { display: flex; align-items: center; gap: 0.4rem; }
-.zone-meta strong { color: #e2e8f0; }
-
-/* ── Input panel ── */
-.input-panel {
-    background: rgba(255,255,255,0.04);
-    border: 1px solid rgba(255,255,255,0.08);
-    border-radius: 16px; padding: 1.5rem; margin-bottom: 2rem;
+.card-header-title {
+    font-size: 1.15rem;
+    font-weight: 700;
+    color: #ffffff;
+    margin-bottom: 0.8rem;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
 }
 
-/* ── Sample photo buttons ── */
-.sample-label {
-    font-size: 0.72rem; font-weight: 600; text-transform: uppercase;
-    letter-spacing: 1.2px; color: #475569; margin-bottom: 0.5rem;
+/* ── Glossy Metadata Pill Rows ── */
+.pill-list {
+    display: flex;
+    flex-direction: column;
+    gap: 0.6rem;
+    margin-top: 0.8rem;
+}
+.pill-row {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 0.65rem 1rem;
+    border-radius: 999px;
+    font-size: 0.85rem;
+    font-weight: 600;
+    color: #ffffff;
+    box-shadow: inset 0 2px 3px rgba(255, 255, 255, 0.35), 0 4px 14px rgba(0, 0, 0, 0.6);
+    border: 1px solid rgba(255, 255, 255, 0.2);
+}
+.pill-left {
+    display: flex;
+    align-items: center;
+    gap: 0.6rem;
+}
+.pill-badge {
+    font-size: 0.7rem;
+    font-weight: 800;
+    letter-spacing: 0.8px;
+    display: flex;
+    align-items: center;
+    gap: 0.3rem;
 }
 
-/* ── Agent cards ── */
+.pill-red {
+    background: linear-gradient(90deg, #dc2626 0%, #b91c1c 50%, #991b1b 100%);
+}
+.pill-orange {
+    background: linear-gradient(90deg, #ea580c 0%, #c2410c 50%, #9a3412 100%);
+}
+.pill-yellow {
+    background: linear-gradient(90deg, #ca8a04 0%, #a16207 50%, #854d0e 100%);
+}
+.pill-green {
+    background: linear-gradient(90deg, #059669 0%, #047857 50%, #065f46 100%);
+}
+.pill-purple {
+    background: linear-gradient(90deg, #7c3aed 0%, #6d28d9 50%, #5b21b6 100%);
+}
+
+/* ── System Control Bar ── */
+.system-control-bar {
+    background: linear-gradient(180deg, #1f1f28 0%, #0e0e14 100%);
+    border: 1px solid rgba(255, 255, 255, 0.12);
+    border-radius: 16px;
+    padding: 0.9rem 1.4rem;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-top: 1.2rem;
+    box-shadow: 0 10px 30px rgba(0,0,0,0.8);
+}
+.control-bar-left {
+    display: flex;
+    flex-direction: column;
+    gap: 0.3rem;
+}
+.control-bar-title {
+    font-size: 1.05rem;
+    font-weight: 700;
+    color: #ffffff;
+}
+.control-bar-glow-line {
+    height: 3px;
+    width: 140px;
+    background: #10b981;
+    border-radius: 999px;
+    box-shadow: 0 0 10px #10b981;
+}
+.control-bar-right {
+    display: flex;
+    align-items: center;
+    gap: 0.8rem;
+}
+.tech-badge {
+    background: rgba(255, 255, 255, 0.06);
+    border: 1px solid rgba(255, 255, 255, 0.12);
+    border-radius: 999px;
+    padding: 0.35rem 0.9rem;
+    font-size: 0.8rem;
+    font-weight: 600;
+    color: #e2e8f0;
+    display: flex;
+    align-items: center;
+    gap: 0.4rem;
+}
+.led-dot {
+    width: 12px;
+    height: 12px;
+    border-radius: 50%;
+    background: #10b981;
+    box-shadow: 0 0 12px #10b981;
+    margin-left: 0.4rem;
+}
+
+/* ── Primary Action Button ── */
+.stButton > button {
+    background: linear-gradient(135deg, #3b82f6 0%, #8b5cf6 100%) !important;
+    color: #ffffff !important;
+    border: 1px solid rgba(255, 255, 255, 0.3) !important;
+    border-radius: 999px !important;
+    padding: 0.85rem 2.5rem !important;
+    font-size: 1.05rem !important;
+    font-weight: 700 !important;
+    box-shadow: 0 0 25px rgba(59, 130, 246, 0.4) !important;
+    width: 100% !important;
+}
+.stButton > button:hover {
+    transform: scale(1.02) !important;
+    box-shadow: 0 0 40px rgba(139, 92, 246, 0.6) !important;
+}
+
+/* ── Agent & Coordinator Cards ── */
 .agent-card {
-    background: rgba(255,255,255,0.04);
-    border: 1px solid rgba(255,255,255,0.08);
-    border-radius: 16px; padding: 1.4rem; height: 100%;
-    transition: transform 0.2s ease, box-shadow 0.2s ease;
+    background: linear-gradient(180deg, #26262e 0%, #0e0e12 100%);
+    border: 1px solid rgba(255, 255, 255, 0.12);
+    border-radius: 20px;
+    padding: 1.5rem;
+    height: 100%;
 }
-.agent-card:hover { transform: translateY(-3px); box-shadow: 0 12px 40px rgba(0,0,0,0.3); }
-.card-icon  { font-size: 2.2rem; margin-bottom: 0.6rem; }
-.card-title { font-size: 0.75rem; font-weight: 600; text-transform: uppercase; letter-spacing: 1.5px; color: #64748b; margin-bottom: 0.4rem; }
+.card-icon { font-size: 2.2rem; margin-bottom: 0.6rem; }
+.card-title { font-size: 0.75rem; font-weight: 700; text-transform: uppercase; letter-spacing: 1.5px; color: #94a3b8; margin-bottom: 0.4rem; }
 .card-value { font-size: 2.4rem; font-weight: 800; margin-bottom: 0.3rem; }
-.card-note  { font-size: 0.82rem; color: #94a3b8; line-height: 1.5; }
+.card-note  { font-size: 0.83rem; color: #cbd5e1; line-height: 1.6; }
 
-/* ── Severity badges ── */
-.badge { display: inline-block; padding: 0.2rem 0.9rem; border-radius: 999px; font-size: 0.72rem; font-weight: 700; text-transform: uppercase; letter-spacing: 1px; margin-bottom: 0.8rem; }
-.badge-low    { background: rgba(16,185,129,0.2);  color: #10b981; border: 1px solid rgba(16,185,129,0.3); }
-.badge-medium { background: rgba(245,158,11,0.2);  color: #f59e0b; border: 1px solid rgba(245,158,11,0.3); }
-.badge-high   { background: rgba(239,68,68,0.2);   color: #ef4444; border: 1px solid rgba(239,68,68,0.3); }
-.badge-unknown{ background: rgba(148,163,184,0.2); color: #94a3b8; border: 1px solid rgba(148,163,184,0.3); }
-
-/* ── Coordinator panel ── */
-.coordinator-panel { border-radius: 20px; padding: 2rem; margin: 2rem 0; border: 1px solid; }
-.coordinator-panel.risk-high    { background: linear-gradient(135deg, rgba(239,68,68,0.12), rgba(220,38,38,0.06));   border-color: rgba(239,68,68,0.3); }
-.coordinator-panel.risk-medium  { background: linear-gradient(135deg, rgba(245,158,11,0.12), rgba(217,119,6,0.06));  border-color: rgba(245,158,11,0.3); }
-.coordinator-panel.risk-low     { background: linear-gradient(135deg, rgba(16,185,129,0.12), rgba(5,150,105,0.06));  border-color: rgba(16,185,129,0.3); }
-.coordinator-panel.risk-unknown { background: linear-gradient(135deg, rgba(148,163,184,0.1), rgba(100,116,139,0.05)); border-color: rgba(148,163,184,0.2); }
-.risk-label { font-size: 0.7rem; font-weight: 700; text-transform: uppercase; letter-spacing: 2px; color: #64748b; margin-bottom: 0.5rem; }
+.coordinator-panel { border-radius: 24px; padding: 2rem; margin: 2rem 0; border: 1px solid; }
+.coordinator-panel.risk-high    { background: linear-gradient(135deg, rgba(239,68,68,0.12), rgba(220,38,38,0.05));   border-color: rgba(239,68,68,0.3); }
+.coordinator-panel.risk-medium  { background: linear-gradient(135deg, rgba(245,158,11,0.12), rgba(217,119,6,0.05));  border-color: rgba(245,158,11,0.3); }
+.coordinator-panel.risk-low     { background: linear-gradient(135deg, rgba(16,185,129,0.12), rgba(5,150,105,0.05));  border-color: rgba(16,185,129,0.3); }
+.coordinator-panel.risk-unknown { background: linear-gradient(135deg, rgba(148,163,184,0.08), rgba(100,116,139,0.04)); border-color: rgba(148,163,184,0.2); }
+.risk-label { font-size: 0.72rem; font-weight: 700; text-transform: uppercase; letter-spacing: 2px; color: #94a3b8; margin-bottom: 0.5rem; }
 .risk-level { font-size: 3.5rem; font-weight: 800; letter-spacing: -2px; line-height: 1; margin-bottom: 1.2rem; }
-.risk-high   .risk-level { color: #ef4444; }
-.risk-medium .risk-level { color: #f59e0b; }
-.risk-low    .risk-level { color: #10b981; }
+.risk-high   .risk-level { color: #fca5a5; }
+.risk-medium .risk-level { color: #fde047; }
+.risk-low    .risk-level { color: #6ee7b7; }
 .risk-unknown .risk-level { color: #94a3b8; }
-.reasoning-box { background: rgba(0,0,0,0.25); border-radius: 12px; padding: 1.2rem; margin-bottom: 1rem; border: 1px solid rgba(255,255,255,0.06); }
-.reasoning-label { font-size: 0.68rem; font-weight: 700; text-transform: uppercase; letter-spacing: 1.5px; color: #475569; margin-bottom: 0.5rem; }
-.reasoning-text  { font-size: 0.92rem; color: #cbd5e1; line-height: 1.7; }
-.action-box  { background: rgba(59,130,246,0.1); border: 1px solid rgba(59,130,246,0.2); border-radius: 12px; padding: 1rem 1.2rem; }
-.action-text { font-size: 0.88rem; color: #93c5fd; font-weight: 500; line-height: 1.5; }
+.reasoning-box { background: rgba(0, 0, 0, 0.4); border-radius: 14px; padding: 1.2rem; margin-bottom: 1rem; border: 1px solid rgba(255,255,255,0.06); }
+.reasoning-label { font-size: 0.7rem; font-weight: 700; text-transform: uppercase; letter-spacing: 1.5px; color: #94a3b8; margin-bottom: 0.5rem; }
+.reasoning-text  { font-size: 0.93rem; color: #e2e8f0; line-height: 1.7; }
+.action-box  { background: rgba(59, 130, 246, 0.1); border: 1px solid rgba(59, 130, 246, 0.25); border-radius: 14px; padding: 1rem 1.2rem; }
+.action-text { font-size: 0.89rem; color: #93c5fd; font-weight: 500; line-height: 1.5; }
 
-/* ── Divider ── */
-.section-divider { height: 1px; background: linear-gradient(90deg, transparent, rgba(255,255,255,0.08), transparent); margin: 2rem 0; }
-
-/* ── Hero tag ── */
-.hero-tag {
-    display: inline-block; background: linear-gradient(135deg, #ef4444, #dc2626);
-    color: white; font-size: 0.65rem; font-weight: 700; text-transform: uppercase;
-    letter-spacing: 1.2px; padding: 0.15rem 0.7rem; border-radius: 999px;
-    margin-left: 0.5rem; vertical-align: middle;
-}
-
-/* ── Streamlit overrides ── */
-div[data-testid="stButton"] > button {
-    background: linear-gradient(135deg, #10b981, #3b82f6);
-    color: white; border: none; border-radius: 10px;
-    padding: 0.65rem 2rem; font-weight: 600; font-size: 0.95rem;
-    transition: opacity 0.2s; width: 100%;
-}
-div[data-testid="stButton"] > button:hover { opacity: 0.88; border: none; }
+.section-divider { height: 1px; background: linear-gradient(90deg, transparent, rgba(255,255,255,0.1), transparent); margin: 2rem 0; }
 
 div[data-testid="stSelectbox"] > div > div {
-    background: rgba(255,255,255,0.06);
-    border: 1px solid rgba(255,255,255,0.1) !important;
-    border-radius: 10px; color: #e2e8f0;
+    background: linear-gradient(180deg, #374151 0%, #1f2937 100%);
+    border: 1px solid rgba(255,255,255,0.2) !important;
+    border-radius: 12px; color: #f1f5f9;
 }
+/* Fix Streamlit File Uploader button text overlap */
 div[data-testid="stFileUploader"] {
-    background: rgba(255,255,255,0.03);
-    border: 1px dashed rgba(255,255,255,0.15);
-    border-radius: 12px; padding: 0.5rem;
+    background: rgba(255, 255, 255, 0.04) !important;
+    border: 1px dashed rgba(255, 255, 255, 0.2) !important;
+    border-radius: 14px !important;
+    padding: 0.6rem 0.8rem !important;
+    overflow: hidden !important;
 }
-label { color: #94a3b8 !important; font-size: 0.82rem !important; font-weight: 500 !important; }
+
+div[data-testid="stFileUploader"] label {
+    display: none !important;
+}
+
+/* Force the upload section into a clean single row */
+div[data-testid="stFileUploader"] section {
+    display: flex !important;
+    flex-direction: row !important;
+    flex-wrap: nowrap !important;
+    align-items: center !important;
+    justify-content: flex-start !important;
+    gap: 0.8rem !important;
+    padding: 0.4rem !important;
+    overflow: hidden !important;
+    position: relative !important;
+}
+
+/* The "Browse files" / "Upload" button */
+div[data-testid="stFileUploader"] section > button,
+div[data-testid="stFileUploader"] button {
+    display: inline-flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    flex-shrink: 0 !important;
+    height: 36px !important;
+    min-width: 100px !important;
+    padding: 0 1rem !important;
+    margin: 0 !important;
+    background: rgba(255, 255, 255, 0.1) !important;
+    border: 1px solid rgba(255, 255, 255, 0.25) !important;
+    border-radius: 8px !important;
+    font-size: 0.82rem !important;
+    font-family: 'Inter', sans-serif !important;
+    white-space: nowrap !important;
+    overflow: hidden !important;
+    text-overflow: ellipsis !important;
+    position: relative !important;
+    z-index: 2 !important;
+}
+
+/* Prevent any child inside button from creating duplicate text */
+div[data-testid="stFileUploader"] button * {
+    font-family: 'Inter', sans-serif !important;
+    white-space: nowrap !important;
+    position: static !important;
+}
+
+/* The file size / type info text next to the button */
+div[data-testid="stFileUploader"] section > div {
+    display: inline-flex !important;
+    align-items: center !important;
+    gap: 0.4rem !important;
+    font-size: 0.78rem !important;
+    color: #94a3b8 !important;
+    font-family: 'Inter', sans-serif !important;
+    white-space: nowrap !important;
+    overflow: hidden !important;
+    text-overflow: ellipsis !important;
+    flex: 1 !important;
+    min-width: 0 !important;
+}
+
+div[data-testid="stFileUploader"] section > div * {
+    font-family: 'Inter', sans-serif !important;
+    white-space: nowrap !important;
+}
+
+/* Hide any absolutely positioned duplicate text elements */
+div[data-testid="stFileUploader"] section > button + div[data-testid],
+div[data-testid="stFileUploader"] [data-testid="stMarkdownContainer"] {
+    position: static !important;
+}
+
+/* Kill any stacked/absolute elements that cause overlap */
+div[data-testid="stFileUploader"] section::before,
+div[data-testid="stFileUploader"] section::after {
+    display: none !important;
+}
 </style>
 """, unsafe_allow_html=True)
 
 # ---------------------------------------------------------------------------
-# Helpers
+# Helpers & Metadata
 # ---------------------------------------------------------------------------
-
 SEVERITY_COLORS = {"low": "#10b981", "medium": "#f59e0b", "high": "#ef4444", "unknown": "#94a3b8"}
 RISK_EMOJIS     = {"low": "🟢", "medium": "🟡", "high": "🔴", "unknown": "⚪"}
 
-# Zone metadata shown in the info strip
 ZONE_META = {
-    "Zone 1 - Riverside Industrial": {"coords": "12.9141°N, 77.6432°E", "area": "Bellandur / Varthur belt", "expected": "🔴 High risk (hero demo zone)"},
-    "Zone 2 - Central Market":       {"coords": "12.9634°N, 77.5760°E", "area": "KR Market, Central Bengaluru", "expected": "🟢 Low risk (contrast zone)"},
-    "Zone 3 - Lakeside Residential": {"coords": "12.9784°N, 77.6183°E", "area": "Ulsoor Lake neighbourhood",  "expected": "🟡 Medium risk"},
-    "Zone 4 - Outer Ring Road":      {"coords": "12.9352°N, 77.6940°E", "area": "Marathahalli / ORR junction", "expected": "🟡 Low-medium risk"},
+    "Zone 1 - Riverside Industrial": {
+        "coords": "12.9141°N, 77.6432°E",
+        "lat": 12.9141, "lon": 77.6432,
+        "area": "Bellandur / Varthur belt",
+        "expected": "🔴 High risk (hero demo zone)",
+        "temp": "High risk",
+        "wind1": "12.9141°N, 77.6432°E",
+        "wind2": "12.9141°N, 77.6432°E",
+        "air": "Air risk",
+        "conservation": "High risk",
+    },
+    "Zone 2 - Central Market": {
+        "coords": "12.9634°N, 77.5760°E",
+        "lat": 12.9634, "lon": 77.5760,
+        "area": "KR Market, Central Bengaluru",
+        "expected": "🟢 Low risk (contrast zone)",
+        "temp": "Low risk",
+        "wind1": "12.9634°N, 77.5760°E",
+        "wind2": "12.9634°N, 77.5760°E",
+        "air": "Clear",
+        "conservation": "Low risk",
+    },
+    "Zone 3 - Lakeside Residential": {
+        "coords": "12.9784°N, 77.6183°E",
+        "lat": 12.9784, "lon": 77.6183,
+        "area": "Ulsoor Lake neighbourhood",
+        "expected": "🟡 Medium risk",
+        "temp": "Medium risk",
+        "wind1": "12.9784°N, 77.6183°E",
+        "wind2": "12.9784°N, 77.6183°E",
+        "air": "Moderate risk",
+        "conservation": "Medium risk",
+    },
+    "Zone 4 - Outer Ring Road": {
+        "coords": "12.9352°N, 77.6940°E",
+        "lat": 12.9352, "lon": 77.6940,
+        "area": "Marathahalli / ORR junction",
+        "expected": "🟡 Low-medium risk",
+        "temp": "Low risk",
+        "wind1": "12.9352°N, 77.6940°E",
+        "wind2": "12.9352°N, 77.6940°E",
+        "air": "Low risk",
+        "conservation": "Low risk",
+    },
 }
 
 SAMPLE_IMAGES = {
-    "🏭 Sample 1 — Riverside (heavy litter)": "sample_litter_1.jpg",
-    "🛒 Sample 2 — Market street (moderate)": "sample_litter_2.jpg",
-    "🌿 Sample 3 — Clean sidewalk (low)":     "sample_litter_3.jpg",
+    "Sample 1 - Heavy Litter": "sample_litter_1.jpg",
+    "Sample 2 - Market street": "sample_litter_2.jpg",
+    "Sample 3 - Clean sidewalk": "sample_litter_3.jpg",
 }
 
 PROJECT_ROOT = Path(__file__).parent
@@ -207,7 +439,7 @@ def render_agent_card(icon: str, title: str, result: dict, unit: str = ""):
     <div class="agent-card">
         <div class="card-icon">{icon}</div>
         <div class="card-title">{title}</div>
-        <span class="badge badge-{severity}">{severity.upper()}</span>
+        <span class="badge-tag tag-{severity}">{severity.upper()}</span>
         <div class="card-value" style="color:{color};">{value}{unit}</div>
         <div class="card-note">{note}</div>
     </div>""", unsafe_allow_html=True)
@@ -233,135 +465,390 @@ def render_coordinator(result: dict):
 
 
 # ---------------------------------------------------------------------------
-# Session state — for sample image selection
+# Session state
 # ---------------------------------------------------------------------------
 if "sample_image_path" not in st.session_state:
-    st.session_state.sample_image_path = None
+    st.session_state.sample_image_path = str(PROJECT_ROOT / "sample_litter_1.jpg")
 if "sample_image_label" not in st.session_state:
-    st.session_state.sample_image_label = None
+    st.session_state.sample_image_label = "Sample 1 - Heavy Litter"
 
 # ---------------------------------------------------------------------------
-# Header
+# Header Section
 # ---------------------------------------------------------------------------
-st.markdown("""
-<div class="eco-header">
-    <h1 class="eco-title">🌍 EcoWatch</h1>
-    <p class="eco-subtitle">Multi-Agent Environmental Monitoring · Bengaluru Pilot · YOLOv8 · Groq AI · LangGraph</p>
-</div>""", unsafe_allow_html=True)
+logo_b64 = get_base64_logo()
+st.markdown(f"""
+<div class="header-wrapper">
+    <div style="display: flex; align-items: center; justify-content: center; gap: 1.2rem; margin-bottom: 0.5rem;">
+        <img src="{logo_b64}" style="height: 80px; width: 80px; object-fit: contain; filter: drop-shadow(0 0 25px rgba(52, 211, 153, 0.5));" />
+        <div style="text-align: left;">
+            <h1 class="header-title" style="font-size: 2.5rem; font-weight: 800; margin: 0; background: linear-gradient(135deg, #34d399 0%, #10b981 40%, #fbbf24 100%); -webkit-background-clip: text; -webkit-text-fill-color: transparent;">EcoTriBlend</h1>
+            <div style="font-size: 0.95rem; font-weight: 600; color: #a7f3d0; letter-spacing: 0.5px;">Three Signals. One Combined View.</div>
+        </div>
+    </div>
+    <div class="header-subtitle" style="margin-top: 0.2rem;"></div>
+</div>
+""", unsafe_allow_html=True)
 
 # ---------------------------------------------------------------------------
-# Input panel
+# Main 3-Column Interface Layout
 # ---------------------------------------------------------------------------
-st.markdown('<div class="input-panel">', unsafe_allow_html=True)
+col_loc, col_map, col_img = st.columns([1, 1.15, 1])
 
-col_zone, col_img = st.columns([2, 3])
+import requests
 
-with col_zone:
-    # Zone dropdown — Zone 1 is default (hero demo)
+def get_coordinates_for_location(loc_str: str, preset_zone: str) -> tuple[float, float, str]:
+    preset_meta = ZONE_META.get(preset_zone, {})
+    if not loc_str or not loc_str.strip():
+        return preset_meta.get("lat", 12.9716), preset_meta.get("lon", 77.5946), preset_meta.get("area", preset_zone)
+    
+    clean_str = loc_str.strip()
+    
+    for z_name, z_data in ZONE_META.items():
+        if clean_str.lower() in z_name.lower() or clean_str.lower() in z_data.get("area", "").lower():
+            return z_data["lat"], z_data["lon"], z_data.get("area", z_name)
+
+    if "," in clean_str:
+        try:
+            parts = clean_str.split(",")
+            lat, lon = float(parts[0].strip()), float(parts[1].strip())
+            return lat, lon, f"Custom ({lat:.4f}°N, {lon:.4f}°E)"
+        except ValueError:
+            pass
+
+    try:
+        query = clean_str
+        resp = requests.get(
+            "https://nominatim.openstreetmap.org/search",
+            params={
+                "q": query,
+                "format": "json",
+                "limit": 5,
+                "addressdetails": 1,
+                "namedetails": 1,
+            },
+            headers={"User-Agent": "EcoTriBlend/1.0"},
+            timeout=5
+        )
+        if resp.status_code == 200 and resp.json():
+            # Prefer the result with the highest importance score for accuracy
+            results = resp.json()
+            best = max(results, key=lambda r: float(r.get("importance", 0)))
+            lat, lon = float(best["lat"]), float(best["lon"])
+            display_name = best.get("display_name", clean_str).split(",")[0]
+            return lat, lon, display_name
+    except Exception:
+        pass
+
+    return preset_meta.get("lat", 12.9716), preset_meta.get("lon", 77.5946), clean_str
+
+def deg_to_cardinal(deg: float) -> str:
+    dirs = ["N", "NNE", "NE", "ENE", "E", "ESE", "SE", "SSE", "S", "SSW", "SW", "WSW", "W", "WNW", "NW", "NNW"]
+    ix = int((deg + 11.25) / 22.5)
+    return dirs[ix % 16]
+
+def get_live_weather_and_wind(lat: float, lon: float) -> dict:
+    try:
+        url = f"https://api.open-meteo.com/v1/forecast?latitude={lat}&longitude={lon}&current_weather=true"
+        resp = requests.get(url, timeout=3)
+        if resp.status_code == 200:
+            cw = resp.json().get("current_weather", {})
+            temp = cw.get("temperature", 25.0)
+            wspeed = cw.get("windspeed", 10.0)
+            wdeg = cw.get("winddirection", 0.0)
+            cardinal = deg_to_cardinal(wdeg)
+            return {
+                "temp_c": temp,
+                "wind_speed_kmh": wspeed,
+                "wind_deg": wdeg,
+                "wind_cardinal": cardinal,
+                "wind_str": f"{cardinal} {int(wdeg)}° ({wspeed:.1f} km/h)",
+                "temp_str": f"{temp:.1f}°C"
+            }
+    except Exception:
+        pass
+    return {
+        "temp_c": 26.0,
+        "wind_speed_kmh": 12.0,
+        "wind_deg": 135.0,
+        "wind_cardinal": "SE",
+        "wind_str": "SE 135° (12.0 km/h)",
+        "temp_str": "26.0°C"
+    }
+
+# ── COLUMN 1: LOCATION CARD ────────────────────────────────────────────────
+with col_loc:
+    st.markdown('<div class="glass-card">', unsafe_allow_html=True)
+    st.markdown('<div class="card-header-title">Location</div>', unsafe_allow_html=True)
+    
     zone_options = ZONES
     zone_display = []
     for z in zone_options:
         if "Zone 1" in z:
-            zone_display.append(z + "  ★ hero")
+            zone_display.append(z + " ✦ hero")
         else:
             zone_display.append(z)
 
     selected_idx = st.selectbox(
-        "📍 Select Monitoring Zone",
+        "Select Zone",
         options=range(len(zone_options)),
         format_func=lambda i: zone_display[i],
         index=0,
         key="zone_select",
+        label_visibility="collapsed"
     )
     selected_zone = zone_options[selected_idx]
 
-    # Zone info strip
-    meta = ZONE_META.get(selected_zone, {})
-    st.markdown(f"""
-    <div class="zone-meta">
-        <span>📌 <strong>{meta.get('area','')}</strong></span>
-        <span>🗺️ {meta.get('coords','')}</span>
-        <span>Expected: {meta.get('expected','')}</span>
-    </div>""", unsafe_allow_html=True)
-
-with col_img:
-    uploaded_file = st.file_uploader(
-        "📸 Upload Scene Image for Litter Detection",
-        type=["jpg","jpeg","png","webp","bmp"],
-        help="Or use a sample image below",
+    manual_loc = st.text_input(
+        "Manual Location Input",
+        value="",
+        placeholder="Search any global city/location (e.g. Tokyo, Paris, New York, 48.85, 2.35)...",
+        key="manual_location_input",
+        label_visibility="collapsed"
     )
 
-    # Sample image quick-load buttons
-    st.markdown('<div class="sample-label">🖼️ Or use a sample image:</div>', unsafe_allow_html=True)
-    btn_cols = st.columns(3)
-    for idx, (label, filename) in enumerate(SAMPLE_IMAGES.items()):
-        with btn_cols[idx]:
-            sample_path = PROJECT_ROOT / filename
-            disabled    = not sample_path.exists()
-            if st.button(label, key=f"sample_{idx}", disabled=disabled):
-                st.session_state.sample_image_path  = str(sample_path)
-                st.session_state.sample_image_label = label
+    center_lat, center_lon, active_area_name = get_coordinates_for_location(manual_loc, selected_zone)
+    meta = ZONE_META.get(selected_zone, {})
+    live_w = get_live_weather_and_wind(center_lat, center_lon)
 
-    # Show which sample is active
-    if st.session_state.sample_image_path and uploaded_file is None:
-        st.caption(f"✅ Using: {st.session_state.sample_image_label}")
+    # Retrieve live pipeline state if available
+    pipe_st = st.session_state.get("pipeline_state", {}) or {}
+    air_res = pipe_st.get("air_result", {}) or {}
+    water_res = pipe_st.get("water_result", {}) or {}
+    litter_res = pipe_st.get("litter_result", {}) or {}
+    coord_res = pipe_st.get("coordinator_result", {}) or {}
 
-st.markdown('</div>', unsafe_allow_html=True)
+    # 1. Location Risk Badge
+    loc_risk = coord_res.get("overall_risk", "high").lower()
+    loc_pill_class = "pill-red" if loc_risk == "high" else ("pill-orange" if loc_risk == "medium" else "pill-green")
+    loc_badge_text = f"⚠️ {loc_risk.upper()} RISK" if loc_risk in ("high", "medium") else f"🌿 {loc_risk.upper()} RISK"
+
+    # 2. Temperature Badge
+    temp_val = live_w["temp_c"]
+    temp_pill_class = "pill-orange" if temp_val > 28 else "pill-green"
+    temp_badge_text = f"🌡️ {live_w['temp_str']}"
+
+    # 3. Wind Direction Badge (Real-time live wind vector)
+    wind_badge_text = f"🚩 {live_w['wind_str']}"
+
+    # 4. Air Quality Badge (Live Agent Severity)
+    air_sev = air_res.get("severity", "low").lower()
+    air_val = air_res.get("value", 45)
+    air_pill_class = "pill-red" if air_sev == "high" else ("pill-yellow" if air_sev == "medium" else "pill-green")
+    air_badge_text = f"⚠️ HIGH RISK (AQI {air_val})" if air_sev == "high" else (f"⚠️ MODERATE (AQI {air_val})" if air_sev == "medium" else f"🌿 GOOD (AQI {air_val})")
+
+    # 5. Conservation / Waste Badge (Live Agent Severity)
+    litter_sev = litter_res.get("severity", "high").lower()
+    box_cnt = len(litter_res.get("boxes", []))
+    litter_pill_class = "pill-purple" if litter_sev == "high" else ("pill-orange" if litter_sev == "medium" else "pill-green")
+    litter_badge_text = f"⚠️ HIGH RISK ({box_cnt} items)" if litter_sev == "high" else (f"⚠️ MODERATE ({box_cnt} items)" if litter_sev == "medium" else f"🌿 SAFE ({box_cnt} items)")
+
+    # Styled metadata glossy pill rows dynamically updating from live data
+    st.markdown(f"""
+    <div class="pill-list">
+        <div class="pill-row {loc_pill_class}">
+            <div class="pill-left">
+                <span>✚</span>
+                <span>{active_area_name}</span>
+            </div>
+            <div class="pill-badge">{loc_badge_text}</div>
+        </div>
+        <div class="pill-row {temp_pill_class}">
+            <div class="pill-left">
+                <span>🌡️</span>
+                <span>Temperature</span>
+            </div>
+            <div class="pill-badge">{temp_badge_text}</div>
+        </div>
+        <div class="pill-row pill-yellow">
+            <div class="pill-left">
+                <span>🚩</span>
+                <span>Wind direction</span>
+            </div>
+            <div class="pill-badge">{wind_badge_text}</div>
+        </div>
+        <div class="pill-row {air_pill_class}">
+            <div class="pill-left">
+                <span>🌳</span>
+                <span>Air Quality</span>
+            </div>
+            <div class="pill-badge">{air_badge_text}</div>
+        </div>
+        <div class="pill-row {litter_pill_class}">
+            <div class="pill-left">
+                <span>♻️</span>
+                <span>Conservation</span>
+            </div>
+            <div class="pill-badge">{litter_badge_text}</div>
+        </div>
+    </div>
+    """, unsafe_allow_html=True)
+    st.markdown('</div>', unsafe_allow_html=True)
+
+# ── COLUMN 2: BENGALURU MAP CARD ───────────────────────────────────────────
+with col_map:
+    st.markdown('<div class="glass-card" style="padding: 0.5rem; display:flex; flex-direction:column; justify-content:space-between;">', unsafe_allow_html=True)
+    
+    angles = np.linspace(0, 2 * np.pi, 60)
+    
+    # Concentric spectrum polygon rings surrounding current location (tighter for accuracy)
+    inner_poly = [[center_lon + 0.012 * np.cos(a), center_lat + 0.010 * np.sin(a)] for a in angles]
+    mid_poly   = [[center_lon + 0.022 * np.cos(a), center_lat + 0.019 * np.sin(a)] for a in angles]
+    outer_poly = [[center_lon + 0.032 * np.cos(a), center_lat + 0.028 * np.sin(a)] for a in angles]
+    
+    map_zones_df = pd.DataFrame([
+        {"name": active_area_name,                "lat": center_lat, "lon": center_lon, "color": [239, 68, 68, 240], "radius": 600},
+    ])
+    
+    layer_outer = pdk.Layer(
+        "PolygonLayer", [{"polygon": outer_poly}],
+        get_polygon="polygon", get_fill_color=[124, 58, 237, 76], get_line_color=[124, 58, 237, 76],
+        get_line_width=2, lineWidthUnits="pixels", pickable=False,
+    )
+    layer_mid = pdk.Layer(
+        "PolygonLayer", [{"polygon": mid_poly}],
+        get_polygon="polygon", get_fill_color=[16, 185, 129, 76], get_line_color=[16, 185, 129, 76],
+        get_line_width=2, lineWidthUnits="pixels", pickable=False,
+    )
+    layer_inner = pdk.Layer(
+        "PolygonLayer", [{"polygon": inner_poly}],
+        get_polygon="polygon", get_fill_color=[239, 68, 68, 76], get_line_color=[239, 68, 68, 76],
+        get_line_width=2, lineWidthUnits="pixels", pickable=False,
+    )
+
+    scatter_layer = pdk.Layer(
+        "ScatterplotLayer", map_zones_df,
+        get_position=["lon", "lat"], get_color="color", get_radius="radius",
+        pickable=True, auto_highlight=True,
+    )
+
+    zoom_level = 14.0 if manual_loc and manual_loc.strip() else 12.0
+
+    view_state = pdk.ViewState(
+        latitude=center_lat, longitude=center_lon, zoom=zoom_level, pitch=25,
+    )
+
+    deck = pdk.Deck(
+        layers=[layer_outer, layer_mid, layer_inner, scatter_layer],
+        initial_view_state=view_state,
+        map_style="https://basemaps.cartocdn.com/gl/dark-matter-gl-style/style.json",
+        tooltip={"text": "{name}"}
+    )
+    
+    st.pydeck_chart(deck, use_container_width=True, height=330)
+    st.markdown('</div>', unsafe_allow_html=True)
+
+# ── COLUMN 3: IMAGE UPLOAD CARD ──────────────────────────────────
+with col_img:
+    st.markdown('<div class="glass-card">', unsafe_allow_html=True)
+    st.markdown('<div class="card-header-title">Image Upload</div>', unsafe_allow_html=True)
+    
+    uploaded_file = st.file_uploader(
+        "Upload Scene Image",
+        type=["jpg","jpeg","png","webp","bmp"],
+        label_visibility="collapsed",
+    )
+    
+    if uploaded_file is not None:
+        st.image(uploaded_file, caption=f"📷 Uploaded: {uploaded_file.name}", use_container_width=True)
+
+    st.markdown('</div>', unsafe_allow_html=True)
 
 # ---------------------------------------------------------------------------
-# Run button
+# System Control Bar Below Top Grid
 # ---------------------------------------------------------------------------
-_, run_col, _ = st.columns([1, 2, 1])
-with run_col:
-    run_clicked = st.button("🚀 Run Environmental Analysis", use_container_width=True)
+st.markdown("""
+<div class="system-control-bar">
+    <div class="control-bar-left">
+        <div class="control-bar-title">Multi-Agent Environmental Monitoring System</div>
+        <div class="control-bar-glow-line"></div>
+    </div>
+    <div class="control-bar-right">
+        <div class="tech-badge">🔬 YOLOv8</div>
+        <div class="tech-badge">🧠 Groq AI</div>
+        <div class="tech-badge">⚡ LangGraph</div>
+        <div class="led-dot"></div>
+    </div>
+</div>
+""", unsafe_allow_html=True)
+
+# ---------------------------------------------------------------------------
+# Prominent Run Button & Status Section
+# ---------------------------------------------------------------------------
+st.markdown('<div style="margin-top: 1.8rem;"></div>', unsafe_allow_html=True)
+
+_, btn_col, _ = st.columns([1, 1.6, 1])
+with btn_col:
+    run_clicked = st.button("Run Environmental Analysis", use_container_width=True)
+
+# Status bar & leaf icon below button
+st.markdown("""
+<div class="status-bar-container">
+    <div class="status-icon-circle">🌿</div>
+    <div class="status-progress-track">
+        <div class="status-progress-fill"></div>
+    </div>
+    <div class="status-text">EcoTriBlend Active: Monitoring Bengaluru</div>
+</div>
+""", unsafe_allow_html=True)
+
+# City skyline SVG graphic at bottom of header section
+st.markdown("""
+<svg viewBox="0 0 1200 120" preserveAspectRatio="none" style="width: 100%; height: 70px; opacity: 0.25; margin-top: -1.5rem; fill: #10b981;">
+  <path d="M0 120 L0 90 L20 90 L20 120 L40 120 L40 70 L70 70 L70 120 L90 120 L90 50 L130 50 L130 120 L150 120 L150 80 L180 80 L180 120 L210 120 L210 30 L250 30 L250 120 L280 120 L280 95 L310 95 L310 120 L350 120 L350 40 L400 40 L400 120 L430 120 L430 75 L470 75 L470 120 L510 120 L510 20 L560 20 L560 120 L600 120 L600 65 L640 65 L640 120 L680 120 L680 35 L730 35 L730 120 L770 120 L770 85 L810 85 L810 120 L850 120 L850 55 L900 55 L900 120 L940 120 L940 70 L980 70 L980 120 L1020 120 L1020 45 L1070 45 L1070 120 L1110 120 L1110 80 L1150 80 L1150 120 L1200 120 L1200 120 Z"></path>
+</svg>
+""", unsafe_allow_html=True)
 
 st.markdown('<div class="section-divider"></div>', unsafe_allow_html=True)
 
 # ---------------------------------------------------------------------------
-# Pipeline execution
+# Execution & Analysis Results
 # ---------------------------------------------------------------------------
-if run_clicked:
-    # Resolve image path: uploaded file > sample selection
-    image_path_to_use = None
-    tmp_path = None
+if run_clicked or "pipeline_state" in st.session_state:
+    if run_clicked:
+        image_path_to_use = None
+        tmp_path = None
 
-    if uploaded_file is not None:
-        suffix = "." + uploaded_file.name.rsplit(".", 1)[-1].lower()
-        with tempfile.NamedTemporaryFile(delete=False, suffix=suffix) as tmp:
-            tmp.write(uploaded_file.read())
-            tmp_path = tmp.name
-        image_path_to_use = tmp_path
-    elif st.session_state.sample_image_path:
-        image_path_to_use = st.session_state.sample_image_path
-    else:
-        st.warning("Please upload an image or select a sample image.")
-        st.stop()
-
-    with st.spinner("🔄 Running multi-agent pipeline… Air · Water · Litter · Coordinator"):
-        try:
-            state = orchestrator.run_pipeline(
-                zone=selected_zone,
-                image_path=image_path_to_use,
-            )
-        except Exception as exc:
-            st.error(f"❌ Pipeline Error: {exc}")
+        if uploaded_file is not None:
+            suffix = "." + uploaded_file.name.rsplit(".", 1)[-1].lower()
+            with tempfile.NamedTemporaryFile(delete=False, suffix=suffix) as tmp:
+                tmp.write(uploaded_file.read())
+                tmp_path = tmp.name
+            image_path_to_use = tmp_path
+        elif st.session_state.sample_image_path:
+            image_path_to_use = st.session_state.sample_image_path
+        else:
+            st.warning("Please upload an image or select a sample image.")
             st.stop()
 
-    air_result    = state.get("air_result",    {})
-    water_result  = state.get("water_result",  {})
+        with st.spinner("Running multi-agent pipeline… Air · Water · Litter · Coordinator"):
+            try:
+                state = orchestrator.run_pipeline(
+                    zone=selected_zone,
+                    image_path=image_path_to_use,
+                )
+                st.session_state.pipeline_state = state
+                st.session_state.current_image = image_path_to_use
+            except Exception as exc:
+                st.error(f"Pipeline Error: {exc}")
+                st.stop()
+    
+    state = st.session_state.pipeline_state
+    image_path_to_use = st.session_state.get("current_image", st.session_state.sample_image_path)
+
+    air_result    = state.get("air_result", {})
+    water_result  = state.get("water_result", {})
     litter_result = state.get("litter_result", {})
     coord_result  = state.get("coordinator_result", {})
     pipe_errors   = state.get("errors", [])
 
-    # ── Zone header ────────────────────────────────────────────────────────
-    hero_tag = '<span class="hero-tag">HERO ZONE</span>' if "Zone 1" in selected_zone else ""
+    # Results Header
     st.markdown(
-        f"<h3 style='color:#e2e8f0; margin-bottom:0.2rem;'>📡 Results for {selected_zone}{hero_tag}</h3>"
-        f"<p style='color:#64748b; font-size:0.85rem; margin-top:0;'>Bengaluru · {ZONE_META.get(selected_zone,{}).get('area','')}</p>",
+        f"<h3 style='color:#ffffff; margin-bottom:0.2rem;'>📡 Results for {selected_zone}</h3>"
+        f"<p style='color:#94a3b8; font-size:0.85rem; margin-top:0;'>Bengaluru · {ZONE_META.get(selected_zone,{}).get('area','')}</p>",
         unsafe_allow_html=True,
     )
 
-    # ── Specialist agent cards ─────────────────────────────────────────────
+    # Specialist Agent Cards
     c1, c2, c3 = st.columns(3)
     with c1:
         render_agent_card("💨", "Air Quality Agent",   air_result,    " AQI")
@@ -370,17 +857,16 @@ if run_clicked:
     with c3:
         render_agent_card("🗑️", "Litter Detection",    litter_result, " objects")
 
-    # ── Pipeline warnings ──────────────────────────────────────────────────
     if pipe_errors:
         with st.expander("⚠️ Pipeline Warnings", expanded=False):
             for err in pipe_errors:
                 st.warning(err)
 
-    # ── Coordinator verdict ────────────────────────────────────────────────
+    # Coordinator Verdict
     st.markdown('<div class="section-divider"></div>', unsafe_allow_html=True)
     render_coordinator(coord_result)
 
-    # ── Litter image panel ─────────────────────────────────────────────────
+    # Scene Analysis (YOLO Bounding Boxes)
     st.markdown('<div class="section-divider"></div>', unsafe_allow_html=True)
     st.markdown("### 🔍 Litter Detection — Scene Analysis")
 
@@ -388,17 +874,17 @@ if run_clicked:
     img_col, meta_col = st.columns([3, 2])
 
     with img_col:
-        annotated = draw_bounding_boxes(image_path_to_use, boxes)
-        st.image(
-            annotated,
-            caption=f"Detected {len(boxes)} object(s) · Severity: {litter_result.get('severity','unknown').upper()}",
-            use_container_width=True,
-        )
+        if image_path_to_use and os.path.exists(image_path_to_use):
+            annotated = draw_bounding_boxes(image_path_to_use, boxes)
+            st.image(
+                annotated,
+                caption=f"Detected {len(boxes)} object(s) · Severity: {litter_result.get('severity','unknown').upper()}",
+                use_container_width=True,
+            )
 
     with meta_col:
         severity = litter_result.get("severity","unknown")
-        color    = SEVERITY_COLORS.get(severity,"#94a3b8")
-        st.markdown(f'<span class="badge badge-{severity}">{severity.upper()}</span>', unsafe_allow_html=True)
+        st.markdown(f'<span class="badge-tag tag-{severity}">{severity.upper()}</span>', unsafe_allow_html=True)
         st.metric("Total Objects Detected", len(boxes))
         if boxes:
             st.markdown("**Detected Labels:**")
@@ -411,14 +897,14 @@ if run_clicked:
         else:
             st.info("No objects detected in this image.")
 
-    # ── Water detail expander ──────────────────────────────────────────────
+    # Water Quality Breakdown Expander
     with st.expander("💧 Water Quality Details (mock_zones.csv)", expanded=False):
         w1, w2, w3 = st.columns(3)
         with w1: st.metric("pH",            water_result.get("ph","N/A"))
         with w2: st.metric("Turbidity NTU", water_result.get("turbidity_ntu","N/A"))
         with w3: st.metric("Coliform",      "⚠️ Detected" if water_result.get("coliform_detected") else "✅ Clear")
 
-    # ── Air detail expander ────────────────────────────────────────────────
+    # Air Quality Pollutant Breakdown Expander
     if air_result.get("components"):
         with st.expander("💨 Air Pollutant Breakdown (live OWM API)", expanded=False):
             comps = air_result["components"]
@@ -426,34 +912,15 @@ if run_clicked:
             for i, (p, v) in enumerate(comps.items()):
                 with cols[i % 4]:
                     st.metric(p.upper(), f"{v:.2f}")
-            st.caption(f"📍 Coordinates used: {air_result.get('lat'):.4f}°N, {air_result.get('lon'):.4f}°E")
-
-    # Cleanup temp file
-    if tmp_path:
-        try:
-            os.unlink(tmp_path)
-        except OSError:
-            pass
-
+            st.caption(f"Coordinates used: {air_result.get('lat'):.4f}°N, {air_result.get('lon'):.4f}°E")
 else:
-    # ── Empty state ────────────────────────────────────────────────────────
+    # Initial state prompt
     st.markdown("""
-    <div style="text-align:center; padding:3rem 1rem; color:#475569;">
-        <div style="font-size:4rem; margin-bottom:1rem;">🌿</div>
-        <h3 style="color:#64748b; font-weight:600;">Ready to Monitor Bengaluru</h3>
-        <p style="max-width:520px; margin:0 auto; line-height:1.7; font-size:0.9rem;">
-            Select a monitoring zone, pick a sample image (or upload your own), and click
-            <strong>Run Environmental Analysis</strong> to fire the four-agent pipeline.
+    <div style="text-align:center; padding:2rem 1rem; color:#64748b;">
+        <h4 style="color:#94a3b8; font-weight:600;">Ready to Monitor Bengaluru</h4>
+        <p style="font-size:0.88rem; max-width:500px; margin:0 auto; line-height:1.6;">
+            Select a monitoring zone, choose or upload a scene image, and click
+            <strong style="color:#60a5fa;">Run Environmental Analysis</strong> to evaluate multi-agent environmental risk.
         </p>
-        <br/>
-        <div style="display:flex; justify-content:center; gap:1.5rem; flex-wrap:wrap; font-size:0.82rem; color:#334155; margin-top:0.5rem;">
-            <span>💨 Air · Live OWM AQI</span>
-            <span>🌊 Water · mock_zones.csv</span>
-            <span>🗑️ Litter · YOLOv8 Nano</span>
-            <span>🤖 Coordinator · Groq LLaMA 3</span>
-        </div>
-        <br/>
-        <div style="background:rgba(239,68,68,0.08); border:1px solid rgba(239,68,68,0.2); border-radius:12px; padding:1rem 1.5rem; max-width:480px; margin:1rem auto; font-size:0.82rem; color:#fca5a5;">
-            ⭐ <strong>Hero demo:</strong> Select <em>Zone 1 — Riverside Industrial</em> + Sample 1 for the full multi-signal HIGH RISK story.
-        </div>
-    </div>""", unsafe_allow_html=True)
+    </div>
+    """, unsafe_allow_html=True)
