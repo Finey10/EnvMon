@@ -51,9 +51,44 @@ st.set_page_config(
 st.markdown("""
 <style>
 @import url('https://fonts.cdnfonts.com/css/cooper-black');
+@import url('https://fonts.googleapis.com/css2?family=Material+Symbols+Rounded:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200');
 
-*, html, body, div, span, h1, h2, h3, h4, h5, h6, p, a, label, button, input, select, textarea, [class*="css"], [class*="st-"], [data-testid] {
+/* Apply Cooper Black cleanly to text headings and main UI elements */
+html, body, p, h1, h2, h3, h4, h5, h6, a, label, .card-title, .card-value, .card-note, .header-title, .header-subtitle, .pill-row, .control-bar-title, .tech-badge, .risk-level, .reasoning-text, .action-text {
     font-family: 'Cooper Black', 'Cooper Hewitt', 'Bookman Old Style', serif, sans-serif !important;
+}
+
+/* Restore Material Symbols font ligatures for all Streamlit internal icons (prevents arrow_right text display) */
+[data-testid="stExpanderToggleIcon"],
+[data-testid="stExpanderToggleIcon"] *,
+[data-testid="stIcon"],
+[data-testid="stIcon"] *,
+.material-symbols-rounded,
+.material-symbols-outlined,
+.material-icons,
+span[translate="no"],
+[data-testid*="Icon"] {
+    font-family: 'Material Symbols Rounded', 'Material Symbols Outlined', 'Material Icons', sans-serif !important;
+    font-feature-settings: "liga" 1 !important;
+    font-style: normal !important;
+    letter-spacing: normal !important;
+    text-transform: none !important;
+    display: inline-block !important;
+    white-space: nowrap !important;
+    word-wrap: normal !important;
+    direction: ltr !important;
+}
+
+/* Expander layout fix */
+[data-testid="stExpander"] summary {
+    display: flex !important;
+    align-items: center !important;
+    gap: 0.6rem !important;
+}
+
+[data-testid="stExpander"] summary > div:first-child {
+    display: flex !important;
+    align-items: center !important;
 }
 
 .stApp {
@@ -264,86 +299,39 @@ div[data-testid="stFileUploader"] {
     border: 1px dashed rgba(255, 255, 255, 0.2) !important;
     border-radius: 14px !important;
     padding: 0.6rem 0.8rem !important;
-    overflow: hidden !important;
 }
 
 div[data-testid="stFileUploader"] label {
     display: none !important;
 }
 
-/* Force the upload section into a clean single row */
 div[data-testid="stFileUploader"] section {
     display: flex !important;
     flex-direction: row !important;
-    flex-wrap: nowrap !important;
     align-items: center !important;
     justify-content: flex-start !important;
     gap: 0.8rem !important;
-    padding: 0.4rem !important;
-    overflow: hidden !important;
-    position: relative !important;
+    padding: 0.2rem !important;
 }
 
-/* The "Browse files" / "Upload" button */
-div[data-testid="stFileUploader"] section > button,
 div[data-testid="stFileUploader"] button {
-    display: inline-flex !important;
-    align-items: center !important;
-    justify-content: center !important;
-    flex-shrink: 0 !important;
-    height: 36px !important;
-    min-width: 100px !important;
-    padding: 0 1rem !important;
-    margin: 0 !important;
-    background: rgba(255, 255, 255, 0.1) !important;
-    border: 1px solid rgba(255, 255, 255, 0.25) !important;
-    border-radius: 8px !important;
+    font-family: 'Inter', -apple-system, sans-serif !important;
     font-size: 0.82rem !important;
-    font-family: 'Inter', sans-serif !important;
+    font-weight: 600 !important;
     white-space: nowrap !important;
-    overflow: hidden !important;
-    text-overflow: ellipsis !important;
-    position: relative !important;
-    z-index: 2 !important;
+    padding: 0.35rem 1rem !important;
+    margin: 0 !important;
+    border-radius: 8px !important;
 }
 
-/* Prevent any child inside button from creating duplicate text */
-div[data-testid="stFileUploader"] button * {
-    font-family: 'Inter', sans-serif !important;
-    white-space: nowrap !important;
-    position: static !important;
-}
-
-/* The file size / type info text next to the button */
 div[data-testid="stFileUploader"] section > div {
-    display: inline-flex !important;
-    align-items: center !important;
-    gap: 0.4rem !important;
+    font-family: 'Inter', -apple-system, sans-serif !important;
     font-size: 0.78rem !important;
     color: #94a3b8 !important;
-    font-family: 'Inter', sans-serif !important;
-    white-space: nowrap !important;
-    overflow: hidden !important;
-    text-overflow: ellipsis !important;
-    flex: 1 !important;
-    min-width: 0 !important;
 }
 
 div[data-testid="stFileUploader"] section > div * {
-    font-family: 'Inter', sans-serif !important;
-    white-space: nowrap !important;
-}
-
-/* Hide any absolutely positioned duplicate text elements */
-div[data-testid="stFileUploader"] section > button + div[data-testid],
-div[data-testid="stFileUploader"] [data-testid="stMarkdownContainer"] {
-    position: static !important;
-}
-
-/* Kill any stacked/absolute elements that cause overlap */
-div[data-testid="stFileUploader"] section::before,
-div[data-testid="stFileUploader"] section::after {
-    display: none !important;
+    font-family: 'Inter', -apple-system, sans-serif !important;
 }
 </style>
 """, unsafe_allow_html=True)
