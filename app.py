@@ -37,6 +37,7 @@ def get_base64_logo() -> str:
 # ---------------------------------------------------------------------------
 # Page config
 # ---------------------------------------------------------------------------
+
 st.set_page_config(
     page_title="EcoTriBlend | Three Signals. One Combined View.",
     page_icon="🍃",

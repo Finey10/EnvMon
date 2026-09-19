@@ -18,8 +18,8 @@ GROQ_API_KEY = os.getenv("GROQ_API_KEY")
 MODEL = "openai/gpt-oss-120b"
 
 SYSTEM_PROMPT = """You are an environmental risk analyst. You will receive JSON readings from three independent monitoring agents:
-1. Air Quality Agent — AQI-based air pollution measurement
-2. Water Quality Agent — turbidity, pH, and coliform data
+1. Air Quality Agent — AQI-based air pollution measurement, plus wind and temperature data
+2. Water Quality Agent — turbidity, pH, coliform data, and a calculated Water Quality Index (WQI)
 3. Litter Detection Agent — object detection count from a field image
 
 Your task is to synthesize these signals and produce a holistic environmental risk assessment.
@@ -27,6 +27,7 @@ Your task is to synthesize these signals and produce a holistic environmental ri
 IMPORTANT ANALYSIS RULES:
 - Do NOT simply average the severity scores. Reason about correlations.
 - If multiple signals are degraded in the same area, identify whether they share a common cause (e.g., industrial runoff, waste dumping, urban pollution).
+- Incorporate weather/wind data if relevant to estimate the spread of airborne pollutants or odors.
 - A single "high" signal from any agent should raise overall risk to at least "medium".
 - Two or more "high" signals, or one "high" with clear correlation evidence, should result in overall risk "high".
 - Identify the most urgent intervention needed.
@@ -34,6 +35,9 @@ IMPORTANT ANALYSIS RULES:
 Respond ONLY with a valid JSON object (no markdown, no explanation outside JSON):
 {
   "overall_risk": "low|medium|high",
+  "urgency_level": "Monitor|Within 24 Hours|Immediate",
+  "primary_hazard_source": "Short 1-4 word classification (e.g. Industrial Runoff, Urban Waste)",
+  "confidence_score": "Percentage (e.g. 90%)",
   "reasoning": "2-4 sentences explaining the cross-signal reasoning and any correlations identified",
   "recommended_action": "One concrete, actionable next step for environmental authorities"
 }"""
@@ -145,14 +149,15 @@ def run(air_result: dict, water_result: dict, litter_result: dict) -> dict:
                 {"role": "system", "content": SYSTEM_PROMPT},
                 {"role": "user", "content": user_prompt},
             ],
-            temperature=0.3,
-            max_tokens=512,
+            temperature=0.3,       # Low temperature for consistent, factual reasoning
+            max_tokens=1024,
         )
 
         raw_text = response.choices[0].message.content
         result = _extract_json(raw_text)
 
-        for key in ("overall_risk", "reasoning", "recommended_action"):
+        # Validate expected keys
+        for key in ("overall_risk", "urgency_level", "primary_hazard_source", "confidence_score", "reasoning", "recommended_action"):
             if key not in result:
                 raise ValueError(f"LLM response missing required key: {key!r}")
 
