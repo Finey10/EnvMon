@@ -899,21 +899,29 @@ if run_clicked or "pipeline_state" in st.session_state:
             st.info("No objects detected in this image.")
 
     # Water Quality Breakdown Expander
+    st.markdown('<div style="margin-top: 1rem;"></div>', unsafe_allow_html=True)
     with st.expander("💧 Water Quality Details (mock_zones.csv)", expanded=False):
-        w1, w2, w3 = st.columns(3)
-        with w1: st.metric("pH",            water_result.get("ph","N/A"))
-        with w2: st.metric("Turbidity NTU", water_result.get("turbidity_ntu","N/A"))
-        with w3: st.metric("Coliform",      "⚠️ Detected" if water_result.get("coliform_detected") else "✅ Clear")
+        w1, w2, w3, w4 = st.columns(4)
+        with w1: st.metric("pH", water_result.get("ph", "N/A"))
+        with w2: st.metric("Turbidity (NTU)", water_result.get("turbidity_ntu", "N/A"))
+        with w3: st.metric("Coliform", "⚠️ Detected" if water_result.get("coliform_detected") else "✅ Clear")
+        with w4: st.metric("WQI Score", f"{water_result.get('wqi_score', 'N/A')}/100")
 
     # Air Quality Pollutant Breakdown Expander
+    st.markdown('<div style="margin-top: 0.5rem;"></div>', unsafe_allow_html=True)
     if air_result.get("components"):
         with st.expander("💨 Air Pollutant Breakdown (live OWM API)", expanded=False):
             comps = air_result["components"]
-            cols  = st.columns(4)
+            st.markdown('<div style="margin-bottom: 0.5rem;"></div>', unsafe_allow_html=True)
+            cols = st.columns(4)
             for i, (p, v) in enumerate(comps.items()):
                 with cols[i % 4]:
                     st.metric(p.upper(), f"{v:.2f}")
-            st.caption(f"Coordinates used: {air_result.get('lat'):.4f}°N, {air_result.get('lon'):.4f}°E")
+            st.markdown('<div style="margin-top: 0.5rem;"></div>', unsafe_allow_html=True)
+            st.caption(f"📍 Coordinates: {air_result.get('lat', 0):.4f}°N, {air_result.get('lon', 0):.4f}°E  ·  "
+                       f"🌡️ {air_result.get('temperature_c', 'N/A')}°C  ·  "
+                       f"💨 Wind {air_result.get('wind_speed_ms', 'N/A')} m/s {air_result.get('wind_direction', '')}")
+
 else:
     # Initial state prompt
     st.markdown("""
