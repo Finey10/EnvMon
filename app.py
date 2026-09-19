@@ -103,14 +103,14 @@ span[translate="no"],
     margin-bottom: 1.2rem;
 }
 .header-title {
-    font-size: 2.5rem;
+    font-size: 2.7rem;
     font-weight: 800;
     color: #ffffff;
     letter-spacing: -0.5px;
     margin: 0;
 }
 .header-subtitle {
-    font-size: 0.9rem;
+    font-size: 1.05rem;
     color: #94a3b8;
     margin-top: 0.3rem;
     font-weight: 500;
@@ -126,7 +126,7 @@ span[translate="no"],
     box-shadow: 0 15px 40px rgba(0, 0, 0, 0.8);
 }
 .card-header-title {
-    font-size: 1.15rem;
+    font-size: 1.3rem;
     font-weight: 700;
     color: #ffffff;
     margin-bottom: 0.8rem;
@@ -139,17 +139,17 @@ span[translate="no"],
 .pill-list {
     display: flex;
     flex-direction: column;
-    gap: 0.6rem;
+    gap: 0.65rem;
     margin-top: 0.8rem;
 }
 .pill-row {
     display: flex;
     align-items: center;
     justify-content: space-between;
-    padding: 0.65rem 1rem;
+    padding: 0.75rem 1.1rem;
     border-radius: 999px;
-    font-size: 0.85rem;
-    font-weight: 600;
+    font-size: 0.98rem;
+    font-weight: 700;
     color: #ffffff;
     box-shadow: inset 0 2px 3px rgba(255, 255, 255, 0.35), 0 4px 14px rgba(0, 0, 0, 0.6);
     border: 1px solid rgba(255, 255, 255, 0.2);
@@ -157,10 +157,11 @@ span[translate="no"],
 .pill-left {
     display: flex;
     align-items: center;
-    gap: 0.6rem;
+    gap: 0.7rem;
+    font-size: 1.0rem;
 }
 .pill-badge {
-    font-size: 0.7rem;
+    font-size: 0.82rem;
     font-weight: 800;
     letter-spacing: 0.8px;
     display: flex;
@@ -189,7 +190,7 @@ span[translate="no"],
     background: linear-gradient(180deg, #1f1f28 0%, #0e0e14 100%);
     border: 1px solid rgba(255, 255, 255, 0.12);
     border-radius: 16px;
-    padding: 0.9rem 1.4rem;
+    padding: 1.0rem 1.5rem;
     display: flex;
     align-items: center;
     justify-content: space-between;
@@ -202,13 +203,13 @@ span[translate="no"],
     gap: 0.3rem;
 }
 .control-bar-title {
-    font-size: 1.05rem;
+    font-size: 1.2rem;
     font-weight: 700;
     color: #ffffff;
 }
 .control-bar-glow-line {
     height: 3px;
-    width: 140px;
+    width: 150px;
     background: #10b981;
     border-radius: 999px;
     box-shadow: 0 0 10px #10b981;
@@ -222,8 +223,8 @@ span[translate="no"],
     background: rgba(255, 255, 255, 0.06);
     border: 1px solid rgba(255, 255, 255, 0.12);
     border-radius: 999px;
-    padding: 0.35rem 0.9rem;
-    font-size: 0.8rem;
+    padding: 0.4rem 1.0rem;
+    font-size: 0.92rem;
     font-weight: 600;
     color: #e2e8f0;
     display: flex;
@@ -231,8 +232,8 @@ span[translate="no"],
     gap: 0.4rem;
 }
 .led-dot {
-    width: 12px;
-    height: 12px;
+    width: 14px;
+    height: 14px;
     border-radius: 50%;
     background: #10b981;
     box-shadow: 0 0 12px #10b981;
@@ -245,8 +246,8 @@ span[translate="no"],
     color: #ffffff !important;
     border: 1px solid rgba(255, 255, 255, 0.3) !important;
     border-radius: 999px !important;
-    padding: 0.85rem 2.5rem !important;
-    font-size: 1.05rem !important;
+    padding: 0.95rem 2.8rem !important;
+    font-size: 1.2rem !important;
     font-weight: 700 !important;
     box-shadow: 0 0 25px rgba(59, 130, 246, 0.4) !important;
     width: 100% !important;
@@ -264,27 +265,27 @@ span[translate="no"],
     padding: 1.5rem;
     height: 100%;
 }
-.card-icon { font-size: 2.2rem; margin-bottom: 0.6rem; }
-.card-title { font-size: 0.75rem; font-weight: 700; text-transform: uppercase; letter-spacing: 1.5px; color: #94a3b8; margin-bottom: 0.4rem; }
-.card-value { font-size: 2.4rem; font-weight: 800; margin-bottom: 0.3rem; }
-.card-note  { font-size: 0.83rem; color: #cbd5e1; line-height: 1.6; }
+.card-icon { font-size: 2.5rem; margin-bottom: 0.6rem; }
+.card-title { font-size: 0.92rem; font-weight: 700; text-transform: uppercase; letter-spacing: 1.5px; color: #94a3b8; margin-bottom: 0.4rem; }
+.card-value { font-size: 2.8rem; font-weight: 800; margin-bottom: 0.3rem; }
+.card-note  { font-size: 0.98rem; color: #cbd5e1; line-height: 1.6; }
 
 .coordinator-panel { border-radius: 24px; padding: 2rem; margin: 2rem 0; border: 1px solid; }
 .coordinator-panel.risk-high    { background: linear-gradient(135deg, rgba(239,68,68,0.12), rgba(220,38,38,0.05));   border-color: rgba(239,68,68,0.3); }
 .coordinator-panel.risk-medium  { background: linear-gradient(135deg, rgba(245,158,11,0.12), rgba(217,119,6,0.05));  border-color: rgba(245,158,11,0.3); }
 .coordinator-panel.risk-low     { background: linear-gradient(135deg, rgba(16,185,129,0.12), rgba(5,150,105,0.05));  border-color: rgba(16,185,129,0.3); }
 .coordinator-panel.risk-unknown { background: linear-gradient(135deg, rgba(148,163,184,0.08), rgba(100,116,139,0.04)); border-color: rgba(148,163,184,0.2); }
-.risk-label { font-size: 0.72rem; font-weight: 700; text-transform: uppercase; letter-spacing: 2px; color: #94a3b8; margin-bottom: 0.5rem; }
-.risk-level { font-size: 3.5rem; font-weight: 800; letter-spacing: -2px; line-height: 1; margin-bottom: 1.2rem; }
+.risk-label { font-size: 0.85rem; font-weight: 700; text-transform: uppercase; letter-spacing: 2px; color: #94a3b8; margin-bottom: 0.5rem; }
+.risk-level { font-size: 3.8rem; font-weight: 800; letter-spacing: -2px; line-height: 1; margin-bottom: 1.2rem; }
 .risk-high   .risk-level { color: #fca5a5; }
 .risk-medium .risk-level { color: #fde047; }
 .risk-low    .risk-level { color: #6ee7b7; }
 .risk-unknown .risk-level { color: #94a3b8; }
 .reasoning-box { background: rgba(0, 0, 0, 0.4); border-radius: 14px; padding: 1.2rem; margin-bottom: 1rem; border: 1px solid rgba(255,255,255,0.06); }
-.reasoning-label { font-size: 0.7rem; font-weight: 700; text-transform: uppercase; letter-spacing: 1.5px; color: #94a3b8; margin-bottom: 0.5rem; }
-.reasoning-text  { font-size: 0.93rem; color: #e2e8f0; line-height: 1.7; }
+.reasoning-label { font-size: 0.82rem; font-weight: 700; text-transform: uppercase; letter-spacing: 1.5px; color: #94a3b8; margin-bottom: 0.5rem; }
+.reasoning-text  { font-size: 1.05rem; color: #e2e8f0; line-height: 1.7; }
 .action-box  { background: rgba(59, 130, 246, 0.1); border: 1px solid rgba(59, 130, 246, 0.25); border-radius: 14px; padding: 1rem 1.2rem; }
-.action-text { font-size: 0.89rem; color: #93c5fd; font-weight: 500; line-height: 1.5; }
+.action-text { font-size: 1.02rem; color: #93c5fd; font-weight: 500; line-height: 1.5; }
 
 .section-divider { height: 1px; background: linear-gradient(90deg, transparent, rgba(255,255,255,0.1), transparent); margin: 2rem 0; }
 
@@ -566,9 +567,16 @@ def get_live_weather_and_wind(lat: float, lon: float) -> dict:
 
 # ── COLUMN 1: LOCATION CARD ────────────────────────────────────────────────
 with col_loc:
-    st.markdown('<div class="glass-card">', unsafe_allow_html=True)
-    st.markdown('<div class="card-header-title">Location</div>', unsafe_allow_html=True)
+    st.markdown('<div class="card-header-title">📍 Location & Monitoring Zone</div>', unsafe_allow_html=True)
     
+    manual_loc = st.text_input(
+        "Manual Location Input",
+        value="",
+        placeholder="Search any global city/location (e.g. Tokyo, Paris, New York, 48.85, 2.35)...",
+        key="manual_location_input",
+        label_visibility="collapsed"
+    )
+
     zone_options = ZONES
     zone_display = []
     for z in zone_options:
@@ -587,15 +595,8 @@ with col_loc:
     )
     selected_zone = zone_options[selected_idx]
 
-    manual_loc = st.text_input(
-        "Manual Location Input",
-        value="",
-        placeholder="Search any global city/location (e.g. Tokyo, Paris, New York, 48.85, 2.35)...",
-        key="manual_location_input",
-        label_visibility="collapsed"
-    )
-
     center_lat, center_lon, active_area_name = get_coordinates_for_location(manual_loc, selected_zone)
+    effective_zone = active_area_name if (manual_loc and manual_loc.strip()) else selected_zone
     meta = ZONE_META.get(selected_zone, {})
     live_w = get_live_weather_and_wind(center_lat, center_lon)
 
@@ -637,7 +638,7 @@ with col_loc:
         <div class="pill-row {loc_pill_class}">
             <div class="pill-left">
                 <span>✚</span>
-                <span>{active_area_name}</span>
+                <span>{effective_zone}</span>
             </div>
             <div class="pill-badge">{loc_badge_text}</div>
         </div>
@@ -671,22 +672,21 @@ with col_loc:
         </div>
     </div>
     """, unsafe_allow_html=True)
-    st.markdown('</div>', unsafe_allow_html=True)
 
-# ── COLUMN 2: BENGALURU MAP CARD ───────────────────────────────────────────
+# ── COLUMN 2: MAP CARD ─────────────────────────────────────────────────────
 with col_map:
-    st.markdown('<div class="glass-card" style="padding: 0.5rem; display:flex; flex-direction:column; justify-content:space-between;">', unsafe_allow_html=True)
+    st.markdown('<div class="card-header-title">🗺️ Live Geographic Map</div>', unsafe_allow_html=True)
     
     # Use robust Scatterplot layers for perfect concentric circles (avoids polygon glitching)
     map_rings_df = pd.DataFrame([
-        # Outer Ring (Purple)
-        {"name": "Outer Bounds", "lat": center_lat, "lon": center_lon, "color": [124, 58, 237, 40], "radius": 3200},
-        # Mid Ring (Green)
-        {"name": "Mid Zone", "lat": center_lat, "lon": center_lon, "color": [16, 185, 129, 50], "radius": 2000},
-        # Inner Ring (Red)
-        {"name": "Core Area", "lat": center_lat, "lon": center_lon, "color": [239, 68, 68, 60], "radius": 1000},
+        # Outer Ring (Purple, 30% opacity)
+        {"name": "Outer Bounds", "lat": center_lat, "lon": center_lon, "color": [124, 58, 237, 76], "radius": 3200},
+        # Mid Ring (Green, 30% opacity)
+        {"name": "Mid Zone", "lat": center_lat, "lon": center_lon, "color": [16, 185, 129, 76], "radius": 2000},
+        # Inner Ring (Red, 30% opacity)
+        {"name": "Core Area", "lat": center_lat, "lon": center_lon, "color": [239, 68, 68, 76], "radius": 1000},
         # Solid Center Point
-        {"name": active_area_name, "lat": center_lat, "lon": center_lon, "color": [239, 68, 68, 255], "radius": 150},
+        {"name": effective_zone, "lat": center_lat, "lon": center_lon, "color": [239, 68, 68, 255], "radius": 150},
     ])
 
     scatter_layer = pdk.Layer(
@@ -717,12 +717,10 @@ with col_map:
     )
     
     st.pydeck_chart(deck, use_container_width=True, height=330)
-    st.markdown('</div>', unsafe_allow_html=True)
 
 # ── COLUMN 3: IMAGE UPLOAD CARD ──────────────────────────────────
 with col_img:
-    st.markdown('<div class="glass-card">', unsafe_allow_html=True)
-    st.markdown('<div class="card-header-title">Image Upload</div>', unsafe_allow_html=True)
+    st.markdown('<div class="card-header-title">📷 Scene Image</div>', unsafe_allow_html=True)
     
     uploaded_file = st.file_uploader(
         "Upload Scene Image",
@@ -732,8 +730,6 @@ with col_img:
     
     if uploaded_file is not None:
         st.image(uploaded_file, caption=f"📷 Uploaded: {uploaded_file.name}", use_container_width=True)
-
-    st.markdown('</div>', unsafe_allow_html=True)
 
 # ---------------------------------------------------------------------------
 # System Control Bar Below Top Grid
@@ -763,13 +759,13 @@ with btn_col:
     run_clicked = st.button("Run Environmental Analysis", use_container_width=True)
 
 # Status bar & leaf icon below button
-st.markdown("""
+st.markdown(f"""
 <div class="status-bar-container">
     <div class="status-icon-circle">🌿</div>
     <div class="status-progress-track">
         <div class="status-progress-fill"></div>
     </div>
-    <div class="status-text">EcoTriBlend Active: Monitoring Bengaluru</div>
+    <div class="status-text">EcoTriBlend Active: Monitoring {effective_zone}</div>
 </div>
 """, unsafe_allow_html=True)
 
@@ -805,7 +801,7 @@ if run_clicked or "pipeline_state" in st.session_state:
         with st.spinner("Running multi-agent pipeline… Air · Water · Litter · Coordinator"):
             try:
                 state = orchestrator.run_pipeline(
-                    zone=selected_zone,
+                    zone=effective_zone,
                     image_path=image_path_to_use,
                 )
                 st.session_state.pipeline_state = state
@@ -825,8 +821,8 @@ if run_clicked or "pipeline_state" in st.session_state:
 
     # Results Header
     st.markdown(
-        f"<h3 style='color:#ffffff; margin-bottom:0.2rem;'>📡 Results for {selected_zone}</h3>"
-        f"<p style='color:#94a3b8; font-size:0.85rem; margin-top:0;'>Bengaluru · {ZONE_META.get(selected_zone,{}).get('area','')}</p>",
+        f"<h3 style='color:#ffffff; margin-bottom:0.2rem;'>📡 Results for {effective_zone}</h3>"
+        f"<p style='color:#94a3b8; font-size:0.95rem; margin-top:0;'>📍 Location: {active_area_name} ({center_lat:.4f}°N, {center_lon:.4f}°E)</p>",
         unsafe_allow_html=True,
     )
 
@@ -881,7 +877,7 @@ if run_clicked or "pipeline_state" in st.session_state:
 
     # Water Quality Breakdown Expander
     st.markdown('<div style="margin-top: 1rem;"></div>', unsafe_allow_html=True)
-    with st.expander("💧 Water Quality Details (mock_zones.csv)", expanded=False):
+    with st.expander("💧 Water Quality Details", expanded=False):
         w1, w2, w3, w4 = st.columns(4)
         with w1: st.metric("pH", water_result.get("ph", "N/A"))
         with w2: st.metric("Turbidity (NTU)", water_result.get("turbidity_ntu", "N/A"))
@@ -905,11 +901,11 @@ if run_clicked or "pipeline_state" in st.session_state:
 
 else:
     # Initial state prompt
-    st.markdown("""
+    st.markdown(f"""
     <div style="text-align:center; padding:2rem 1rem; color:#64748b;">
-        <h4 style="color:#94a3b8; font-weight:600;">Ready to Monitor Bengaluru</h4>
-        <p style="font-size:0.88rem; max-width:500px; margin:0 auto; line-height:1.6;">
-            Select a monitoring zone, choose or upload a scene image, and click
+        <h4 style="color:#94a3b8; font-weight:600; font-size:1.2rem;">Ready to Monitor {effective_zone}</h4>
+        <p style="font-size:0.98rem; max-width:550px; margin:0 auto; line-height:1.6;">
+            Select a monitoring zone or enter a custom location, choose or upload a scene image, and click
             <strong style="color:#60a5fa;">Run Environmental Analysis</strong> to evaluate multi-agent environmental risk.
         </p>
     </div>
