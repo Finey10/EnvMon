@@ -32,15 +32,7 @@ IMPORTANT ANALYSIS RULES:
 - Two or more "high" signals, or one "high" with clear correlation evidence, should result in overall risk "high".
 - Identify the most urgent intervention needed.
 
-Respond ONLY with a valid JSON object (no markdown, no explanation outside JSON):
-{
-  "overall_risk": "low|medium|high",
-  "urgency_level": "Monitor|Within 24 Hours|Immediate",
-  "primary_hazard_source": "Short 1-4 word classification (e.g. Industrial Runoff, Urban Waste)",
-  "confidence_score": "Percentage (e.g. 90%)",
-  "reasoning": "2-4 sentences explaining the cross-signal reasoning and any correlations identified",
-  "recommended_action": "One concrete, actionable next step for environmental authorities"
-}"""
+You MUST call the `submit_risk_assessment` tool to log your final verdict."""
 
 
 def _build_user_prompt(air: dict, water: dict, litter: dict) -> str:
@@ -75,20 +67,47 @@ def _build_user_prompt(air: dict, water: dict, litter: dict) -> str:
     )
 
 
-def _extract_json(text: str) -> dict:
-    """Extract the first JSON object from the LLM response string."""
-    # Try direct parse first
-    try:
-        return json.loads(text.strip())
-    except json.JSONDecodeError:
-        pass
-
-    # Fallback: find JSON block with regex
-    match = re.search(r"\{.*\}", text, re.DOTALL)
-    if match:
-        return json.loads(match.group())
-
-    raise ValueError(f"Could not extract JSON from LLM response:\n{text}")
+TOOLS = [
+    {
+        "type": "function",
+        "function": {
+            "name": "submit_risk_assessment",
+            "description": "Submit the final environmental risk assessment based on multiple sensor readings.",
+            "parameters": {
+                "type": "object",
+                "properties": {
+                    "overall_risk": {
+                        "type": "string",
+                        "enum": ["low", "medium", "high"],
+                        "description": "The overall environmental risk level"
+                    },
+                    "urgency_level": {
+                        "type": "string",
+                        "enum": ["Monitor", "Within 24 Hours", "Immediate"],
+                        "description": "How quickly authorities need to respond"
+                    },
+                    "primary_hazard_source": {
+                        "type": "string",
+                        "description": "Short 1-4 word classification (e.g. Industrial Runoff, Urban Waste)"
+                    },
+                    "confidence_score": {
+                        "type": "string",
+                        "description": "Percentage (e.g. 90%)"
+                    },
+                    "reasoning": {
+                        "type": "string",
+                        "description": "2-4 sentences explaining the cross-signal reasoning and any correlations identified"
+                    },
+                    "recommended_action": {
+                        "type": "string",
+                        "description": "One concrete, actionable next step for environmental authorities"
+                    }
+                },
+                "required": ["overall_risk", "urgency_level", "primary_hazard_source", "confidence_score", "reasoning", "recommended_action"]
+            }
+        }
+    }
+]
 
 
 def _fallback_synthesis(air: dict, water: dict, litter: dict) -> dict:
@@ -149,12 +168,15 @@ def run(air_result: dict, water_result: dict, litter_result: dict) -> dict:
                 {"role": "system", "content": SYSTEM_PROMPT},
                 {"role": "user", "content": user_prompt},
             ],
-            temperature=0.3,       # Low temperature for consistent, factual reasoning
+            tools=TOOLS,
+            tool_choice={"type": "function", "function": {"name": "submit_risk_assessment"}},
+            temperature=0.3,
             max_tokens=1024,
         )
 
-        raw_text = response.choices[0].message.content
-        result = _extract_json(raw_text)
+        # Extract arguments from the LLM's explicit tool call!
+        tool_call = response.choices[0].message.tool_calls[0]
+        result = json.loads(tool_call.function.arguments)
 
         # Validate expected keys
         for key in ("overall_risk", "urgency_level", "primary_hazard_source", "confidence_score", "reasoning", "recommended_action"):
