@@ -806,6 +806,12 @@ if run_clicked or "pipeline_state" in st.session_state:
                 )
                 st.session_state.pipeline_state = state
                 st.session_state.current_image = image_path_to_use
+                
+                # Polish & Delight: UI feedback on completion
+                st.toast("✅ Analysis complete! Scroll down to view the Coordinator's verdict.", icon="✨")
+                if state.get("coordinator_result", {}).get("overall_risk", "").lower() == "low":
+                    st.balloons()
+                    
             except Exception as exc:
                 st.error(f"Pipeline Error: {exc}")
                 st.stop()
