@@ -677,37 +677,29 @@ with col_loc:
 with col_map:
     st.markdown('<div class="glass-card" style="padding: 0.5rem; display:flex; flex-direction:column; justify-content:space-between;">', unsafe_allow_html=True)
     
-    angles = np.linspace(0, 2 * np.pi, 60)
-    
-    # Concentric spectrum polygon rings surrounding current location (tighter for accuracy)
-    inner_poly = [[center_lon + 0.012 * np.cos(a), center_lat + 0.010 * np.sin(a)] for a in angles]
-    mid_poly   = [[center_lon + 0.022 * np.cos(a), center_lat + 0.019 * np.sin(a)] for a in angles]
-    outer_poly = [[center_lon + 0.032 * np.cos(a), center_lat + 0.028 * np.sin(a)] for a in angles]
-    
-    map_zones_df = pd.DataFrame([
-        {"name": active_area_name,                "lat": center_lat, "lon": center_lon, "color": [239, 68, 68, 240], "radius": 600},
+    # Use robust Scatterplot layers for perfect concentric circles (avoids polygon glitching)
+    map_rings_df = pd.DataFrame([
+        # Outer Ring (Purple)
+        {"name": "Outer Bounds", "lat": center_lat, "lon": center_lon, "color": [124, 58, 237, 40], "radius": 3200},
+        # Mid Ring (Green)
+        {"name": "Mid Zone", "lat": center_lat, "lon": center_lon, "color": [16, 185, 129, 50], "radius": 2000},
+        # Inner Ring (Red)
+        {"name": "Core Area", "lat": center_lat, "lon": center_lon, "color": [239, 68, 68, 60], "radius": 1000},
+        # Solid Center Point
+        {"name": active_area_name, "lat": center_lat, "lon": center_lon, "color": [239, 68, 68, 255], "radius": 150},
     ])
-    
-    layer_outer = pdk.Layer(
-        "PolygonLayer", [{"polygon": outer_poly}],
-        get_polygon="polygon", get_fill_color=[124, 58, 237, 76], get_line_color=[124, 58, 237, 76],
-        get_line_width=2, lineWidthUnits="pixels", pickable=False,
-    )
-    layer_mid = pdk.Layer(
-        "PolygonLayer", [{"polygon": mid_poly}],
-        get_polygon="polygon", get_fill_color=[16, 185, 129, 76], get_line_color=[16, 185, 129, 76],
-        get_line_width=2, lineWidthUnits="pixels", pickable=False,
-    )
-    layer_inner = pdk.Layer(
-        "PolygonLayer", [{"polygon": inner_poly}],
-        get_polygon="polygon", get_fill_color=[239, 68, 68, 76], get_line_color=[239, 68, 68, 76],
-        get_line_width=2, lineWidthUnits="pixels", pickable=False,
-    )
 
     scatter_layer = pdk.Layer(
-        "ScatterplotLayer", map_zones_df,
-        get_position=["lon", "lat"], get_color="color", get_radius="radius",
-        pickable=True, auto_highlight=True,
+        "ScatterplotLayer", map_rings_df,
+        get_position=["lon", "lat"],
+        get_fill_color="color",
+        get_line_color="color",
+        get_radius="radius",
+        pickable=True,
+        auto_highlight=True,
+        stroked=True,
+        filled=True,
+        line_width_min_pixels=1,
     )
 
     zoom_level = 14.0 if manual_loc and manual_loc.strip() else 12.0
@@ -717,7 +709,7 @@ with col_map:
     )
 
     deck = pdk.Deck(
-        layers=[layer_outer, layer_mid, layer_inner, scatter_layer],
+        layers=[scatter_layer],
         initial_view_state=view_state,
         map_style="https://basemaps.cartocdn.com/gl/dark-matter-gl-style/style.json",
         tooltip={"text": "{name}"}
