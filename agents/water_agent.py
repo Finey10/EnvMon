@@ -46,6 +46,16 @@ def _generate_synthetic_water_data(city: str) -> pd.Series:
             "water_coliform": True
         })
         
+    # Force perfect water quality if the user manually types Tokyo
+    if city_lower == "tokyo":
+        return pd.Series({
+            "zone": city,
+            "city": city,
+            "water_ph": 7.1,
+            "water_turbidity": 0.8,
+            "water_coliform": False
+        })
+        
     # Seed a hash with the city name so the same city always gets the same data
     city_hash = int(hashlib.md5(city_lower.encode()).hexdigest(), 16)
     
