@@ -219,6 +219,28 @@ span[translate="no"],
     align-items: center;
     gap: 0.8rem;
 }
+
+/* Hide Mapbox/Carto attribution watermarks */
+.mapboxgl-ctrl-bottom-right,
+.mapboxgl-ctrl-bottom-left,
+.mapboxgl-ctrl-attrib,
+.mapboxgl-ctrl-logo,
+[class*="mapboxgl-ctrl"],
+[class*="carto-attribution"],
+.deck-tooltip,
+div[style*="font-family: Helvetica, Arial, sans-serif;"] {
+    display: none !important;
+    opacity: 0 !important;
+    visibility: hidden !important;
+}
+
+/* 3D MAP RADAR (PyDeck) */
+.stPyDeckChart {
+    border-radius: 12px;
+    overflow: hidden;
+    border: 1px solid rgba(255, 255, 255, 0.1);
+}
+
 .tech-badge {
     background: rgba(255, 255, 255, 0.06);
     border: 1px solid rgba(255, 255, 255, 0.12);
