@@ -33,8 +33,21 @@ def _load_data() -> pd.DataFrame:
 
 def _generate_synthetic_water_data(city: str) -> pd.Series:
     """Deterministically generate realistic water data for an unknown city."""
+    city_lower = city.strip().lower()
+    
+    # ── HACKATHON DEMO OVERRIDE ──
+    # Force terrible water quality if the user manually types Bangalore
+    if city_lower in ["bengaluru", "bangalore"]:
+        return pd.Series({
+            "zone": city,
+            "city": city,
+            "water_ph": 4.2,
+            "water_turbidity": 9.5,
+            "water_coliform": True
+        })
+        
     # Seed a hash with the city name so the same city always gets the same data
-    city_hash = int(hashlib.md5(city.strip().lower().encode()).hexdigest(), 16)
+    city_hash = int(hashlib.md5(city_lower.encode()).hexdigest(), 16)
     
     # pH between 5.5 and 8.5
     ph = 5.5 + (city_hash % 30) / 10.0
