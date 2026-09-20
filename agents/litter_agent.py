@@ -66,8 +66,8 @@ def run(image_path: str) -> dict:
 
     # ── Stage 1: YOLOv8 ──────────────────────────────────────────────────────
     model = _get_model()
-    # Lower confidence significantly to catch heavily occluded/amorphous garbage items
-    results = model(str(path), imgsz=1280, conf=0.02, verbose=False)
+    # Lower confidence to catch occluded garbage, but high enough to avoid clean street hallucinations
+    results = model(str(path), imgsz=1280, conf=0.15, verbose=False)
     result = results[0]
 
     boxes = []
