@@ -37,7 +37,7 @@ def _generate_synthetic_water_data(city: str) -> pd.Series:
     
     # ── HACKATHON DEMO OVERRIDE ──
     # Force terrible water quality if the user manually types Bangalore
-    if city_lower in ["bengaluru", "bangalore"]:
+    if "bengaluru" in city_lower or "bangalore" in city_lower:
         return pd.Series({
             "zone": city,
             "city": city,
@@ -47,7 +47,7 @@ def _generate_synthetic_water_data(city: str) -> pd.Series:
         })
         
     # Force perfect water quality if the user manually types Tokyo
-    if city_lower == "tokyo":
+    if "tokyo" in city_lower:
         return pd.Series({
             "zone": city,
             "city": city,
