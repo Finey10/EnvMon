@@ -11,6 +11,7 @@ import json
 import re
 from groq import Groq
 from dotenv import load_dotenv
+from agents.rag_retriever import retrieve_policy
 
 load_dotenv()
 
@@ -57,13 +58,24 @@ def _build_user_prompt(air: dict, water: dict, litter: dict) -> str:
         "object_count": litter["value"],
         "note": litter["note"],
     }
+    
+    # ── RAG Integration: Retrieve official policy ─────────────────────────────
+    # Formulate a RAG query based on the worst severity signals
+    rag_query_terms = []
+    if air.get("severity") in ["high", "medium"]: rag_query_terms.append(air.get("note", ""))
+    if water.get("severity") in ["high", "medium"]: rag_query_terms.append(water.get("note", ""))
+    if litter.get("severity") in ["high", "medium"]: rag_query_terms.append(litter.get("note", ""))
+    
+    rag_query = " ".join(rag_query_terms) if rag_query_terms else "general environmental safety policy"
+    relevant_policy = retrieve_policy(rag_query)
 
     return (
         "Here are the three agent readings for the monitored area:\n\n"
         f"AIR QUALITY:\n{json.dumps(air_summary, indent=2)}\n\n"
         f"WATER QUALITY:\n{json.dumps(water_summary, indent=2)}\n\n"
         f"LITTER DETECTION:\n{json.dumps(litter_summary, indent=2)}\n\n"
-        "Produce the risk assessment JSON now."
+        f"RETRIEVED OFFICIAL POLICY (RAG):\n{relevant_policy}\n\n"
+        "Produce the risk assessment JSON now, integrating the retrieved policy into your reasoning."
     )
 
 
