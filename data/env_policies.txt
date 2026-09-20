@@ -1,0 +1,11 @@
+[POLICY 101: HIGH AQI]
+If Air Quality Index (AQI) exceeds 150 (PM2.5 or PM10 dominant), authorities must issue a public health advisory recommending masks for vulnerable populations. If AQI exceeds 300, all heavy industrial operations in a 5km radius must be halted temporarily.
+
+[POLICY 201: HIGH TURBIDITY]
+If water turbidity exceeds 5.0 NTU, it indicates severe sediment runoff or industrial discharge. The local environmental board must immediately dispatch a water inspection team and halt nearby effluent plant discharge until sediment clears.
+
+[POLICY 202: COLIFORM BACTERIA]
+The detection of Coliform bacteria indicates raw sewage contamination. Immediate action required: issue a strict "Boil Water" or "Do Not Consume" advisory for the affected water body and initiate emergency sanitation protocols.
+
+[POLICY 301: SEVERE LITTER]
+If heavy litter (7+ items detected in a single cluster) is found near waterways, a specialized bio-hazard cleanup crew must be deployed within 48 hours to prevent microplastic water contamination.
