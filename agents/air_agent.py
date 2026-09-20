@@ -2,11 +2,12 @@
 Agent 1 — Air Quality Agent
 Fetches live AQI from OpenWeatherMap Air Pollution API.
 
-Zones are mapped to specific Bengaluru lat/lon coordinates so each zone
-gets a real, slightly-differentiated reading from the same city.
-
-Zone 1 (Riverside Industrial) → Bellandur industrial corridor — typically
-the worst AQI in the city due to effluent plants and ring-road traffic.
+Features Global Dynamic Scaling:
+1. Hero Zones (Bengaluru): Fast-path coordinates for the hackathon demo zones 
+   (e.g., "Zone 1 - Riverside Industrial" -> Bellandur industrial corridor).
+2. Global Fallback: If a user searches ANY city worldwide (e.g. "Tokyo", "New York"), 
+   this agent automatically uses the OWM Geocoding API to resolve the coordinates 
+   and pulls real, live air quality for that global location.
 
 Shared JSON contract:
   {"signal": "air", "severity": "low|medium|high", "value": <us_aqi>, "note": "..."}
