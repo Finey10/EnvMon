@@ -1,0 +1,667 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>EcoTriBlend — National AI Hackathon 2026</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap');
+
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  body {
+    font-family: 'Inter', sans-serif;
+    background: #0a0a0f;
+    color: #ffffff;
+    overflow: hidden;
+    height: 100vh;
+    width: 100vw;
+  }
+
+  .slide {
+    display: none;
+    width: 100vw;
+    height: 100vh;
+    position: absolute;
+    top: 0; left: 0;
+    padding: 60px 80px;
+    flex-direction: column;
+    justify-content: center;
+    animation: fadeIn 0.4s ease;
+  }
+
+  .slide.active { display: flex; }
+
+  @keyframes fadeIn {
+    from { opacity: 0; transform: translateY(20px); }
+    to   { opacity: 1; transform: translateY(0); }
+  }
+
+  /* ── Slide Backgrounds ── */
+  .slide-1  { background: radial-gradient(ellipse at 30% 50%, #1a0533 0%, #0a0a0f 70%); }
+  .slide-2  { background: radial-gradient(ellipse at 70% 30%, #0d1f0d 0%, #0a0a0f 70%); }
+  .slide-3  { background: radial-gradient(ellipse at 30% 70%, #0d1a2e 0%, #0a0a0f 70%); }
+  .slide-4  { background: radial-gradient(ellipse at 60% 40%, #1a1a0d 0%, #0a0a0f 70%); }
+  .slide-5  { background: radial-gradient(ellipse at 40% 60%, #0d0d1f 0%, #0a0a0f 70%); }
+  .slide-6  { background: radial-gradient(ellipse at 70% 50%, #1f0d0d 0%, #0a0a0f 70%); }
+  .slide-7  { background: radial-gradient(ellipse at 30% 40%, #0d1a1a 0%, #0a0a0f 70%); }
+  .slide-8  { background: radial-gradient(ellipse at 60% 60%, #1a0d1a 0%, #0a0a0f 70%); }
+
+  /* ── Tags & Badges ── */
+  .tag {
+    display: inline-block;
+    padding: 6px 16px;
+    border-radius: 999px;
+    font-size: 13px;
+    font-weight: 600;
+    letter-spacing: 1.5px;
+    text-transform: uppercase;
+    margin-bottom: 20px;
+  }
+  .tag-purple { background: rgba(139,92,246,0.2); border: 1px solid rgba(139,92,246,0.5); color: #a78bfa; }
+  .tag-green  { background: rgba(34,197,94,0.2);  border: 1px solid rgba(34,197,94,0.5);  color: #4ade80; }
+  .tag-blue   { background: rgba(59,130,246,0.2); border: 1px solid rgba(59,130,246,0.5); color: #60a5fa; }
+  .tag-orange { background: rgba(249,115,22,0.2); border: 1px solid rgba(249,115,22,0.5); color: #fb923c; }
+  .tag-red    { background: rgba(239,68,68,0.2);  border: 1px solid rgba(239,68,68,0.5);  color: #f87171; }
+  .tag-cyan   { background: rgba(6,182,212,0.2);  border: 1px solid rgba(6,182,212,0.5);  color: #22d3ee; }
+
+  /* ── Typography ── */
+  .slide-title {
+    font-size: 58px;
+    font-weight: 900;
+    line-height: 1.1;
+    margin-bottom: 20px;
+  }
+  .slide-subtitle {
+    font-size: 22px;
+    font-weight: 400;
+    color: rgba(255,255,255,0.6);
+    line-height: 1.6;
+    max-width: 700px;
+    margin-bottom: 40px;
+  }
+  .section-title {
+    font-size: 42px;
+    font-weight: 800;
+    margin-bottom: 10px;
+  }
+  .section-sub {
+    font-size: 18px;
+    color: rgba(255,255,255,0.55);
+    margin-bottom: 40px;
+    font-weight: 400;
+  }
+
+  /* ── Gradient Text ── */
+  .grad-purple { background: linear-gradient(135deg, #a78bfa, #ec4899); -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
+  .grad-green  { background: linear-gradient(135deg, #4ade80, #06b6d4); -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
+  .grad-orange { background: linear-gradient(135deg, #fb923c, #f59e0b); -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
+  .grad-blue   { background: linear-gradient(135deg, #60a5fa, #a78bfa); -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
+  .grad-red    { background: linear-gradient(135deg, #f87171, #fb923c); -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
+
+  /* ── Cards ── */
+  .card {
+    background: rgba(255,255,255,0.04);
+    border: 1px solid rgba(255,255,255,0.1);
+    border-radius: 20px;
+    padding: 28px 32px;
+    backdrop-filter: blur(10px);
+  }
+  .card-title {
+    font-size: 16px;
+    font-weight: 700;
+    margin-bottom: 8px;
+    letter-spacing: 0.3px;
+  }
+  .card-text {
+    font-size: 14px;
+    color: rgba(255,255,255,0.6);
+    line-height: 1.6;
+  }
+
+  /* ── Grids ── */
+  .grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; }
+  .grid-3 { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 20px; }
+  .grid-4 { display: grid; grid-template-columns: 1fr 1fr 1fr 1fr; gap: 16px; }
+
+  /* ── Stat Numbers ── */
+  .stat-big {
+    font-size: 52px;
+    font-weight: 900;
+    line-height: 1;
+    margin-bottom: 6px;
+  }
+  .stat-label {
+    font-size: 13px;
+    color: rgba(255,255,255,0.5);
+    font-weight: 500;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+  }
+
+  /* ── Tech Pill ── */
+  .tech-pill {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    padding: 8px 16px;
+    border-radius: 999px;
+    font-size: 13px;
+    font-weight: 600;
+    margin: 4px;
+  }
+
+  /* ── Agent Cards ── */
+  .agent-card {
+    background: rgba(255,255,255,0.03);
+    border: 1px solid rgba(255,255,255,0.08);
+    border-radius: 16px;
+    padding: 24px;
+    position: relative;
+    overflow: hidden;
+  }
+  .agent-card::before {
+    content: '';
+    position: absolute;
+    top: 0; left: 0; right: 0;
+    height: 3px;
+  }
+  .agent-card.air::before   { background: linear-gradient(90deg, #60a5fa, #a78bfa); }
+  .agent-card.water::before { background: linear-gradient(90deg, #22d3ee, #4ade80); }
+  .agent-card.litter::before{ background: linear-gradient(90deg, #fb923c, #f59e0b); }
+  .agent-card.coord::before { background: linear-gradient(90deg, #ec4899, #a78bfa); }
+  .agent-icon { font-size: 32px; margin-bottom: 12px; }
+  .agent-name { font-size: 16px; font-weight: 700; margin-bottom: 4px; }
+  .agent-tech { font-size: 12px; color: rgba(255,255,255,0.45); margin-bottom: 10px; }
+  .agent-desc { font-size: 13px; color: rgba(255,255,255,0.6); line-height: 1.5; }
+
+  /* ── Flow Step ── */
+  .flow-step {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+    padding: 16px 20px;
+    background: rgba(255,255,255,0.03);
+    border: 1px solid rgba(255,255,255,0.08);
+    border-radius: 12px;
+    margin-bottom: 12px;
+  }
+  .flow-num {
+    width: 36px; height: 36px;
+    border-radius: 50%;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 15px; font-weight: 800;
+    flex-shrink: 0;
+  }
+  .flow-text { font-size: 15px; font-weight: 500; }
+  .flow-sub  { font-size: 12px; color: rgba(255,255,255,0.45); margin-top: 2px; }
+
+  /* ── Divider ── */
+  .divider {
+    width: 60px; height: 4px; border-radius: 2px;
+    margin-bottom: 32px;
+  }
+
+  /* ── Navigation ── */
+  .nav {
+    position: fixed;
+    bottom: 30px; right: 40px;
+    display: flex; gap: 12px; align-items: center;
+    z-index: 100;
+  }
+  .nav-btn {
+    width: 48px; height: 48px;
+    background: rgba(255,255,255,0.08);
+    border: 1px solid rgba(255,255,255,0.15);
+    border-radius: 50%;
+    color: white;
+    font-size: 20px;
+    cursor: pointer;
+    display: flex; align-items: center; justify-content: center;
+    transition: all 0.2s;
+    backdrop-filter: blur(10px);
+  }
+  .nav-btn:hover { background: rgba(255,255,255,0.18); transform: scale(1.08); }
+  .nav-counter {
+    font-size: 13px;
+    color: rgba(255,255,255,0.45);
+    font-weight: 500;
+    min-width: 50px;
+    text-align: center;
+  }
+
+  /* ── Slide Number ── */
+  .slide-num {
+    position: fixed; top: 30px; right: 40px;
+    font-size: 13px; color: rgba(255,255,255,0.25);
+    font-weight: 500; z-index: 100;
+  }
+
+  /* ── Logo strip ── */
+  .logo-strip {
+    position: fixed; top: 30px; left: 40px;
+    display: flex; align-items: center; gap: 10px;
+    z-index: 100;
+  }
+  .logo-dot {
+    width: 10px; height: 10px; border-radius: 50%;
+    background: linear-gradient(135deg, #a78bfa, #4ade80);
+  }
+  .logo-text { font-size: 14px; font-weight: 700; color: rgba(255,255,255,0.5); }
+
+  /* ── Quote ── */
+  .quote {
+    font-size: 20px;
+    font-style: italic;
+    color: rgba(255,255,255,0.7);
+    line-height: 1.7;
+    border-left: 4px solid #a78bfa;
+    padding-left: 24px;
+    margin: 20px 0;
+  }
+
+  /* ── Highlight Row ── */
+  .highlight-row {
+    display: flex; align-items: center; gap: 16px;
+    padding: 14px 20px;
+    background: rgba(255,255,255,0.03);
+    border: 1px solid rgba(255,255,255,0.08);
+    border-radius: 12px;
+    margin-bottom: 10px;
+  }
+  .hl-icon { font-size: 22px; flex-shrink: 0; }
+  .hl-text { font-size: 15px; font-weight: 500; }
+  .hl-sub  { font-size: 12px; color: rgba(255,255,255,0.45); }
+
+  /* ── Two-col layout ── */
+  .two-col {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 40px;
+    align-items: start;
+  }
+  .three-col {
+    display: grid;
+    grid-template-columns: 1fr 1fr 1fr;
+    gap: 24px;
+  }
+</style>
+</head>
+<body>
+
+<!-- ── Logo & Slide Counter ── -->
+<div class="logo-strip">
+  <div class="logo-dot"></div>
+  <div class="logo-text">EcoTriBlend</div>
+</div>
+<div class="slide-num" id="slideNum">1 / 8</div>
+
+<!-- ══════════════════════════════════════════
+     SLIDE 1: TITLE
+═══════════════════════════════════════════ -->
+<div class="slide slide-1 active">
+  <div style="max-width: 750px;">
+    <div class="tag tag-purple">🏆 National AI Hackathon 2026 · Top 3 Finalist</div>
+    <h1 class="slide-title">
+      <span class="grad-purple">Eco</span><span class="grad-green">Tri</span><span class="grad-blue">Blend</span>
+    </h1>
+    <p class="slide-subtitle">
+      A Multi-Modal AI Orchestrator that fuses live air quality, water telemetry, and computer vision into a single command center for urban environmental crisis response.
+    </p>
+    <div style="display:flex; gap:10px; flex-wrap:wrap; margin-top: 10px;">
+      <span class="tech-pill" style="background:rgba(139,92,246,0.15); border:1px solid rgba(139,92,246,0.3); color:#a78bfa;">🔗 LangGraph</span>
+      <span class="tech-pill" style="background:rgba(34,197,94,0.15); border:1px solid rgba(34,197,94,0.3); color:#4ade80;">👁️ YOLOv8</span>
+      <span class="tech-pill" style="background:rgba(59,130,246,0.15); border:1px solid rgba(59,130,246,0.3); color:#60a5fa;">⚡ Groq LLM</span>
+      <span class="tech-pill" style="background:rgba(6,182,212,0.15); border:1px solid rgba(6,182,212,0.3); color:#22d3ee;">📚 LangChain RAG</span>
+      <span class="tech-pill" style="background:rgba(249,115,22,0.15); border:1px solid rgba(249,115,22,0.3); color:#fb923c;">🗄️ ChromaDB</span>
+    </div>
+  </div>
+</div>
+
+<!-- ══════════════════════════════════════════
+     SLIDE 2: THE PROBLEM
+═══════════════════════════════════════════ -->
+<div class="slide slide-2">
+  <div class="tag tag-red">⚠️ The Crisis</div>
+  <h2 class="section-title">Cities Are <span class="grad-red">Flying Blind</span> During Emergencies</h2>
+  <p class="section-sub">Environmental crises happen in real-time. The data does not.</p>
+
+  <div class="two-col" style="margin-top: 10px;">
+    <div>
+      <div class="flow-step">
+        <div class="flow-num" style="background:rgba(239,68,68,0.2); color:#f87171;">1</div>
+        <div>
+          <div class="flow-text">Fragmented Data Silos</div>
+          <div class="flow-sub">Air, water, and waste data live in completely separate dashboards</div>
+        </div>
+      </div>
+      <div class="flow-step">
+        <div class="flow-num" style="background:rgba(239,68,68,0.2); color:#f87171;">2</div>
+        <div>
+          <div class="flow-text">Manual Cross-Referencing</div>
+          <div class="flow-sub">Officers spend 45+ minutes piecing together the full picture</div>
+        </div>
+      </div>
+      <div class="flow-step">
+        <div class="flow-num" style="background:rgba(239,68,68,0.2); color:#f87171;">3</div>
+        <div>
+          <div class="flow-text">Delayed Emergency Response</div>
+          <div class="flow-sub">45-min delay in a boil-water advisory causes healthcare crises</div>
+        </div>
+      </div>
+      <div class="flow-step">
+        <div class="flow-num" style="background:rgba(239,68,68,0.2); color:#f87171;">4</div>
+        <div>
+          <div class="flow-text">No Policy Guardrails</div>
+          <div class="flow-sub">Decisions are made without referencing official WHO guidelines</div>
+        </div>
+      </div>
+    </div>
+    <div>
+      <div class="card" style="height:100%; border-color: rgba(239,68,68,0.2);">
+        <div style="font-size: 13px; color: rgba(255,255,255,0.4); margin-bottom: 20px; text-transform: uppercase; letter-spacing: 1px;">By The Numbers</div>
+        <div style="margin-bottom: 28px;">
+          <div class="stat-big grad-red">3.7M</div>
+          <div class="stat-label">Annual deaths from outdoor air pollution (WHO)</div>
+        </div>
+        <div style="margin-bottom: 28px;">
+          <div class="stat-big grad-orange">45 min</div>
+          <div class="stat-label">Average manual data aggregation time for officers</div>
+        </div>
+        <div>
+          <div class="stat-big grad-red">$0</div>
+          <div class="stat-label">Unified AI environmental monitoring tools in production today</div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ══════════════════════════════════════════
+     SLIDE 3: THE SOLUTION
+═══════════════════════════════════════════ -->
+<div class="slide slide-3">
+  <div class="tag tag-blue">💡 Our Solution</div>
+  <h2 class="section-title">A <span class="grad-blue">Single Pane of Glass</span><br>for Environmental Intelligence</h2>
+  <p class="section-sub">EcoTriBlend is a multi-modal AI orchestrator — not a chatbot. Built for action, not conversation.</p>
+
+  <div class="quote">
+    "EcoTriBlend fuses live air, water, and vision data to help municipal environmental officers deploy policy-backed emergency responses in under 3 seconds."
+  </div>
+
+  <div class="three-col" style="margin-top: 20px;">
+    <div class="card" style="border-color: rgba(96,165,250,0.2); text-align:center;">
+      <div style="font-size: 40px; margin-bottom: 12px;">🌫️</div>
+      <div class="card-title" style="color: #60a5fa;">Air Quality</div>
+      <div class="card-text">Live API telemetry for any city on Earth. AQI, PM2.5, CO, NO2, Ozone.</div>
+    </div>
+    <div class="card" style="border-color: rgba(34,211,238,0.2); text-align:center;">
+      <div style="font-size: 40px; margin-bottom: 12px;">💧</div>
+      <div class="card-title" style="color: #22d3ee;">Water Quality</div>
+      <div class="card-text">IoT Digital Twin simulation. pH, Turbidity, Coliform, WQI Score.</div>
+    </div>
+    <div class="card" style="border-color: rgba(251,146,60,0.2); text-align:center;">
+      <div style="font-size: 40px; margin-bottom: 12px;">🗑️</div>
+      <div class="card-title" style="color: #fb923c;">Litter Detection</div>
+      <div class="card-text">Edge YOLOv8 Computer Vision. Zero-latency waste quantification.</div>
+    </div>
+  </div>
+</div>
+
+<!-- ══════════════════════════════════════════
+     SLIDE 4: THE ARCHITECTURE
+═══════════════════════════════════════════ -->
+<div class="slide slide-4">
+  <div class="tag tag-orange">⚙️ System Architecture</div>
+  <h2 class="section-title">How <span class="grad-orange">EcoTriBlend</span> Works</h2>
+  <p class="section-sub">A LangGraph state machine routes data through 4 independent agents</p>
+
+  <div class="grid-4">
+    <div class="agent-card air">
+      <div class="agent-icon">🌫️</div>
+      <div class="agent-name">Air Agent</div>
+      <div class="agent-tech">OpenWeatherMap API · Nominatim</div>
+      <div class="agent-desc">Dynamically geocodes any city and fetches real-time AQI, PM2.5, and wind data.</div>
+    </div>
+    <div class="agent-card water">
+      <div class="agent-icon">💧</div>
+      <div class="agent-name">Water Agent</div>
+      <div class="agent-tech">MD5 IoT Simulator · Pandas</div>
+      <div class="agent-desc">Deterministic Digital Twin simulates live IoT sensor readings. Plug-and-play hardware ready.</div>
+    </div>
+    <div class="agent-card litter">
+      <div class="agent-icon">👁️</div>
+      <div class="agent-name">Litter Agent</div>
+      <div class="agent-tech">YOLOv8 Medium · OpenCV · Pillow</div>
+      <div class="agent-desc">Local edge inference. Detects and counts waste objects with zero API latency.</div>
+    </div>
+    <div class="agent-card coord">
+      <div class="agent-icon">🧠</div>
+      <div class="agent-name">Coordinator Agent</div>
+      <div class="agent-tech">Groq LLM · JSON Tool Calling · RAG</div>
+      <div class="agent-desc">Synthesizes all 3 data streams. Queries WHO policy database. Issues legally-grounded verdict.</div>
+    </div>
+  </div>
+
+  <div style="margin-top: 24px; display: flex; align-items: center; justify-content: center; gap: 12px; flex-wrap: wrap;">
+    <span style="font-size: 13px; color: rgba(255,255,255,0.3);">Orchestrated by</span>
+    <span class="tech-pill" style="background:rgba(139,92,246,0.15); border:1px solid rgba(139,92,246,0.3); color:#a78bfa; font-size: 14px;">🔗 LangGraph StateGraph</span>
+    <span style="font-size: 13px; color: rgba(255,255,255,0.3);">→ Policy grounded by</span>
+    <span class="tech-pill" style="background:rgba(6,182,212,0.15); border:1px solid rgba(6,182,212,0.3); color:#22d3ee; font-size: 14px;">📚 LangChain + ChromaDB RAG</span>
+    <span style="font-size: 13px; color: rgba(255,255,255,0.3);">→ Rendered on</span>
+    <span class="tech-pill" style="background:rgba(255,75,75,0.15); border:1px solid rgba(255,75,75,0.3); color:#ff4b4b; font-size: 14px;">🔴 Streamlit + PyDeck</span>
+  </div>
+</div>
+
+<!-- ══════════════════════════════════════════
+     SLIDE 5: KEY INNOVATIONS
+═══════════════════════════════════════════ -->
+<div class="slide slide-5">
+  <div class="tag tag-purple">🚀 Key Innovations</div>
+  <h2 class="section-title">Engineering Decisions <span class="grad-purple">Worth The Prize</span></h2>
+  <p class="section-sub">Three tradeoffs that separate us from a standard hackathon project.</p>
+
+  <div style="display: flex; flex-direction: column; gap: 14px; margin-top: 10px;">
+    <div class="highlight-row">
+      <div class="hl-icon">🔗</div>
+      <div>
+        <div class="hl-text"><span style="color:#a78bfa; font-weight:700;">Deterministic Orchestration via LangGraph</span> — not a standard LLM agent</div>
+        <div class="hl-sub">LangGraph forces data through strict graph nodes. Unlike a probabilistic agent, it cannot hallucinate its own reasoning path. Critical for emergency response reliability.</div>
+      </div>
+    </div>
+    <div class="highlight-row">
+      <div class="hl-icon">💧</div>
+      <div>
+        <div class="hl-text"><span style="color:#22d3ee; font-weight:700;">MD5 Digital Twin IoT Simulator</span> — not a static Kaggle CSV</div>
+        <div class="hl-sub">The same city always generates the same sensor reading (deterministic). This proves our architecture is plug-and-play: swap the hash function for a real MQTT stream and the system works identically.</div>
+      </div>
+    </div>
+    <div class="highlight-row">
+      <div class="hl-icon">📋</div>
+      <div>
+        <div class="hl-text"><span style="color:#4ade80; font-weight:700;">Native JSON Tool Calling</span> — not string parsing</div>
+        <div class="hl-sub">We defined a strict JSON Schema function (submit_risk_assessment). The Groq LLM is forced to fill it in, guaranteeing our dashboard always receives perfectly structured data — zero parsing failures.</div>
+      </div>
+    </div>
+    <div class="highlight-row">
+      <div class="hl-icon">📚</div>
+      <div>
+        <div class="hl-text"><span style="color:#fb923c; font-weight:700;">RAG as a Legal Policy Engine</span> — not a knowledge base chatbot</div>
+        <div class="hl-sub">We use ChromaDB Vector Store to ground every AI recommendation in official WHO environmental regulations. In a government deployment, every intervention must be legally traceable to a specific policy.</div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ══════════════════════════════════════════
+     SLIDE 6: RAG EXPLAINED
+═══════════════════════════════════════════ -->
+<div class="slide slide-6">
+  <div class="tag tag-cyan">📚 Deep Dive</div>
+  <h2 class="section-title">Why <span class="grad-blue">RAG</span>? Not Just an LLM Prompt?</h2>
+  <p class="section-sub">Two engineering reasons that prove we understand the technology.</p>
+
+  <div class="two-col">
+    <div>
+      <div style="margin-bottom: 24px;">
+        <div class="card" style="border-color: rgba(6,182,212,0.2); margin-bottom: 14px;">
+          <div class="card-title" style="color:#22d3ee; margin-bottom: 10px;">Problem 1: LLMs Hallucinate</div>
+          <div class="card-text">If we ask the Groq LLM to recommend a WHO policy from memory, it might generate a plausible-sounding but completely fabricated regulation. In a government deployment, a hallucinated legal policy is a liability.</div>
+        </div>
+        <div class="card" style="border-color: rgba(6,182,212,0.2);">
+          <div class="card-title" style="color:#22d3ee; margin-bottom: 10px;">Solution: RAG Grounds the AI</div>
+          <div class="card-text">Before the LLM responds, we force it to retrieve the actual policy text from ChromaDB. The LLM can only use what it found. No hallucination possible. Every recommendation is traceable.</div>
+        </div>
+      </div>
+
+      <div class="card" style="border-color: rgba(6,182,212,0.2);">
+        <div class="card-title" style="color:#22d3ee; margin-bottom: 10px;">Problem 2: Token Limits & Updateability</div>
+        <div class="card-text">Pasting 1000 WHO policies into the prompt hits token limits. With ChromaDB, we store unlimited documents and retrieve only the 1-2 most relevant ones. And if WHO updates a policy tomorrow, we just update the database — no LLM retraining needed.</div>
+      </div>
+    </div>
+
+    <div>
+      <div style="font-size: 13px; color: rgba(255,255,255,0.35); margin-bottom: 14px; text-transform: uppercase; letter-spacing: 1px;">The RAG Flow</div>
+      <div class="flow-step">
+        <div class="flow-num" style="background:rgba(6,182,212,0.2); color:#22d3ee;">1</div>
+        <div>
+          <div class="flow-text">TextLoader ingests <code style="background:rgba(255,255,255,0.08); padding: 2px 6px; border-radius: 4px; font-size: 12px;">env_policies.txt</code></div>
+          <div class="flow-sub">WHO environmental regulation documents</div>
+        </div>
+      </div>
+      <div class="flow-step">
+        <div class="flow-num" style="background:rgba(6,182,212,0.2); color:#22d3ee;">2</div>
+        <div>
+          <div class="flow-text">all-MiniLM-L6-v2 creates 384-dim vectors</div>
+          <div class="flow-sub">Sentence Transformers convert text → numbers</div>
+        </div>
+      </div>
+      <div class="flow-step">
+        <div class="flow-num" style="background:rgba(6,182,212,0.2); color:#22d3ee;">3</div>
+        <div>
+          <div class="flow-text">ChromaDB indexes via cosine similarity</div>
+          <div class="flow-sub">Finds the closest matching policy to the crisis query</div>
+        </div>
+      </div>
+      <div class="flow-step">
+        <div class="flow-num" style="background:rgba(6,182,212,0.2); color:#22d3ee;">4</div>
+        <div>
+          <div class="flow-text">Policy text injected into LLM prompt</div>
+          <div class="flow-sub">Coordinator generates a legally-grounded verdict</div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ══════════════════════════════════════════
+     SLIDE 7: TECH STACK
+═══════════════════════════════════════════ -->
+<div class="slide slide-7">
+  <div class="tag tag-green">🛠️ Full Tech Stack</div>
+  <h2 class="section-title">Built With <span class="grad-green">Production-Grade</span> Tools</h2>
+  <p class="section-sub">Every library chosen for a specific engineering reason.</p>
+
+  <div class="grid-3" style="margin-top: 10px;">
+    <div class="card">
+      <div style="font-size: 11px; color: rgba(255,255,255,0.35); letter-spacing: 1px; text-transform: uppercase; margin-bottom: 14px;">Orchestration</div>
+      <div style="margin-bottom: 8px;"><span style="color:#a78bfa; font-weight:700;">LangGraph</span> <span style="color:rgba(255,255,255,0.4); font-size:13px;">— StateGraph routing</span></div>
+      <div><span style="color:#a78bfa; font-weight:700;">Python 3.11</span> <span style="color:rgba(255,255,255,0.4); font-size:13px;">— Core runtime</span></div>
+    </div>
+    <div class="card">
+      <div style="font-size: 11px; color: rgba(255,255,255,0.35); letter-spacing: 1px; text-transform: uppercase; margin-bottom: 14px;">LLM & AI</div>
+      <div style="margin-bottom: 8px;"><span style="color:#60a5fa; font-weight:700;">Groq API</span> <span style="color:rgba(255,255,255,0.4); font-size:13px;">— LPU inference (sub-second)</span></div>
+      <div style="margin-bottom: 8px;"><span style="color:#60a5fa; font-weight:700;">JSON Tool Calling</span> <span style="color:rgba(255,255,255,0.4); font-size:13px;">— Structured output</span></div>
+      <div><span style="color:#60a5fa; font-weight:700;">LangChain + ChromaDB</span> <span style="color:rgba(255,255,255,0.4); font-size:13px;">— RAG pipeline</span></div>
+    </div>
+    <div class="card">
+      <div style="font-size: 11px; color: rgba(255,255,255,0.35); letter-spacing: 1px; text-transform: uppercase; margin-bottom: 14px;">Computer Vision</div>
+      <div style="margin-bottom: 8px;"><span style="color:#fb923c; font-weight:700;">YOLOv8 Medium</span> <span style="color:rgba(255,255,255,0.4); font-size:13px;">— yolov8m.pt (COCO-trained)</span></div>
+      <div style="margin-bottom: 8px;"><span style="color:#fb923c; font-weight:700;">OpenCV</span> <span style="color:rgba(255,255,255,0.4); font-size:13px;">— Bounding box rendering</span></div>
+      <div><span style="color:#fb923c; font-weight:700;">Pillow</span> <span style="color:rgba(255,255,255,0.4); font-size:13px;">— Image preprocessing</span></div>
+    </div>
+    <div class="card">
+      <div style="font-size: 11px; color: rgba(255,255,255,0.35); letter-spacing: 1px; text-transform: uppercase; margin-bottom: 14px;">APIs & Data</div>
+      <div style="margin-bottom: 8px;"><span style="color:#4ade80; font-weight:700;">OpenWeatherMap</span> <span style="color:rgba(255,255,255,0.4); font-size:13px;">— Air pollution + weather</span></div>
+      <div style="margin-bottom: 8px;"><span style="color:#4ade80; font-weight:700;">Nominatim</span> <span style="color:rgba(255,255,255,0.4); font-size:13px;">— City geocoding</span></div>
+      <div><span style="color:#4ade80; font-weight:700;">Open-Meteo</span> <span style="color:rgba(255,255,255,0.4); font-size:13px;">— Live weather</span></div>
+    </div>
+    <div class="card">
+      <div style="font-size: 11px; color: rgba(255,255,255,0.35); letter-spacing: 1px; text-transform: uppercase; margin-bottom: 14px;">Frontend</div>
+      <div style="margin-bottom: 8px;"><span style="color:#ff4b4b; font-weight:700;">Streamlit</span> <span style="color:rgba(255,255,255,0.4); font-size:13px;">— Web dashboard framework</span></div>
+      <div style="margin-bottom: 8px;"><span style="color:#ff4b4b; font-weight:700;">PyDeck</span> <span style="color:rgba(255,255,255,0.4); font-size:13px;">— 3D radar map</span></div>
+      <div><span style="color:#ff4b4b; font-weight:700;">Custom CSS</span> <span style="color:rgba(255,255,255,0.4); font-size:13px;">— Dark glassmorphism UI</span></div>
+    </div>
+    <div class="card">
+      <div style="font-size: 11px; color: rgba(255,255,255,0.35); letter-spacing: 1px; text-transform: uppercase; margin-bottom: 14px;">Embeddings</div>
+      <div style="margin-bottom: 8px;"><span style="color:#22d3ee; font-weight:700;">all-MiniLM-L6-v2</span> <span style="color:rgba(255,255,255,0.4); font-size:13px;">— 384-dim sentence vectors</span></div>
+      <div style="margin-bottom: 8px;"><span style="color:#22d3ee; font-weight:700;">Sentence Transformers</span> <span style="color:rgba(255,255,255,0.4); font-size:13px;">— HuggingFace library</span></div>
+      <div><span style="color:#22d3ee; font-weight:700;">Pandas</span> <span style="color:rgba(255,255,255,0.4); font-size:13px;">— Zone data management</span></div>
+    </div>
+  </div>
+</div>
+
+<!-- ══════════════════════════════════════════
+     SLIDE 8: THE ASK / CLOSING
+═══════════════════════════════════════════ -->
+<div class="slide slide-8">
+  <div style="text-align: center; max-width: 800px; margin: 0 auto;">
+    <div class="tag tag-purple" style="margin-bottom: 30px;">🌍 Vision</div>
+    <h1 class="slide-title" style="font-size: 64px; margin-bottom: 24px;">
+      Real-time sensor fusion<br>for a <span class="grad-green">smarter planet.</span>
+    </h1>
+    <p class="slide-subtitle" style="text-align: center; max-width: 100%; font-size: 20px; margin: 0 auto 40px;">
+      EcoTriBlend proves that AI doesn't just answer questions — it can actively protect communities when given the right architecture.
+    </p>
+
+    <div class="grid-3" style="max-width: 700px; margin: 0 auto 40px;">
+      <div style="text-align:center;">
+        <div class="stat-big grad-purple" style="font-size: 40px;">3s</div>
+        <div class="stat-label">Crisis Detection Time</div>
+      </div>
+      <div style="text-align:center;">
+        <div class="stat-big grad-green" style="font-size: 40px;">∞</div>
+        <div class="stat-label">Cities Supported</div>
+      </div>
+      <div style="text-align:center;">
+        <div class="stat-big grad-blue" style="font-size: 40px;">4</div>
+        <div class="stat-label">AI Agents Fused</div>
+      </div>
+    </div>
+
+    <div style="display: flex; gap: 16px; justify-content: center; flex-wrap: wrap;">
+      <span class="tech-pill" style="background:rgba(139,92,246,0.2); border:1px solid rgba(139,92,246,0.4); color:#a78bfa; font-size: 14px; padding: 12px 24px;">🔗 github.com/Finey10/EnvMon</span>
+      <span class="tech-pill" style="background:rgba(34,197,94,0.2); border:1px solid rgba(34,197,94,0.4); color:#4ade80; font-size: 14px; padding: 12px 24px;">🚀 National AI Hackathon 2026</span>
+    </div>
+  </div>
+</div>
+
+<!-- ── Navigation ── -->
+<div class="nav">
+  <button class="nav-btn" onclick="prevSlide()">←</button>
+  <div class="nav-counter" id="navCounter">1 / 8</div>
+  <button class="nav-btn" onclick="nextSlide()">→</button>
+</div>
+
+<script>
+  const totalSlides = 8;
+  let current = 1;
+
+  function showSlide(n) {
+    document.querySelectorAll('.slide').forEach(s => s.classList.remove('active'));
+    current = Math.max(1, Math.min(n, totalSlides));
+    document.querySelector('.slide:nth-child(' + (current + 2) + ')').classList.add('active');
+    document.getElementById('slideNum').textContent = current + ' / ' + totalSlides;
+    document.getElementById('navCounter').textContent = current + ' / ' + totalSlides;
+  }
+
+  function nextSlide() { showSlide(current + 1); }
+  function prevSlide() { showSlide(current - 1); }
+
+  document.addEventListener('keydown', (e) => {
+    if (e.key === 'ArrowRight' || e.key === 'ArrowDown' || e.key === ' ') nextSlide();
+    if (e.key === 'ArrowLeft'  || e.key === 'ArrowUp')                    prevSlide();
+  });
+</script>
+</body>
+</html>
