@@ -529,24 +529,32 @@ def get_coordinates_for_location(loc_str: str, preset_zone: str) -> tuple[float,
 
     try:
         query = clean_str
+        
+        # Attempt 1: OpenWeatherMap Geocoding API (Highly reliable, requires API key)
         owm_api_key = os.getenv("OPENWEATHERMAP_API_KEY")
         if owm_api_key:
             resp = requests.get(
                 "http://api.openweathermap.org/geo/1.0/direct",
-                params={
-                    "q": query,
-                    "limit": 1,
-                    "appid": owm_api_key
-                },
+                params={"q": query, "limit": 1, "appid": owm_api_key},
                 timeout=5
             )
             if resp.status_code == 200 and resp.json():
                 results = resp.json()
                 if len(results) > 0:
                     best = results[0]
-                    lat, lon = float(best["lat"]), float(best["lon"])
-                    display_name = best.get("name", clean_str)
-                    return lat, lon, display_name
+                    return float(best["lat"]), float(best["lon"]), best.get("name", clean_str)
+
+        # Attempt 2: Open-Meteo Free Geocoding API (No key required, highly reliable on Streamlit Cloud)
+        resp2 = requests.get(
+            "https://geocoding-api.open-meteo.com/v1/search",
+            params={"name": query, "count": 1, "language": "en", "format": "json"},
+            timeout=5
+        )
+        if resp2.status_code == 200 and resp2.json():
+            results = resp2.json().get("results", [])
+            if len(results) > 0:
+                best = results[0]
+                return float(best["latitude"]), float(best["longitude"]), best.get("name", clean_str)
     except Exception:
         pass
 
