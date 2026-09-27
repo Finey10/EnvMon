@@ -538,7 +538,7 @@ def get_coordinates_for_location(loc_str: str, preset_zone: str) -> tuple[float,
                 "addressdetails": 1,
                 "namedetails": 1,
             },
-            headers={"User-Agent": "EcoTriBlend/1.0"},
+            headers={"User-Agent": "EcoTriBlend/1.0 (ecotriblend.demo@example.com)"},
             timeout=5
         )
         if resp.status_code == 200 and resp.json():
