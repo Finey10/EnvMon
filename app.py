@@ -529,25 +529,24 @@ def get_coordinates_for_location(loc_str: str, preset_zone: str) -> tuple[float,
 
     try:
         query = clean_str
-        resp = requests.get(
-            "https://nominatim.openstreetmap.org/search",
-            params={
-                "q": query,
-                "format": "json",
-                "limit": 5,
-                "addressdetails": 1,
-                "namedetails": 1,
-            },
-            headers={"User-Agent": "EcoTriBlend/1.0 (ecotriblend.demo@example.com)"},
-            timeout=5
-        )
-        if resp.status_code == 200 and resp.json():
-            # Prefer the result with the highest importance score for accuracy
-            results = resp.json()
-            best = max(results, key=lambda r: float(r.get("importance", 0)))
-            lat, lon = float(best["lat"]), float(best["lon"])
-            display_name = best.get("display_name", clean_str).split(",")[0]
-            return lat, lon, display_name
+        owm_api_key = os.getenv("OPENWEATHERMAP_API_KEY")
+        if owm_api_key:
+            resp = requests.get(
+                "http://api.openweathermap.org/geo/1.0/direct",
+                params={
+                    "q": query,
+                    "limit": 1,
+                    "appid": owm_api_key
+                },
+                timeout=5
+            )
+            if resp.status_code == 200 and resp.json():
+                results = resp.json()
+                if len(results) > 0:
+                    best = results[0]
+                    lat, lon = float(best["lat"]), float(best["lon"])
+                    display_name = best.get("name", clean_str)
+                    return lat, lon, display_name
     except Exception:
         pass
 
